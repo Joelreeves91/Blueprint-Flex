@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blueprint Flex</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1c2128;--text:#e6edf3;--dim:#7d8590;--border:#30363d;--line:#21262d;
+  --easy:#58a6ff;--quality:#f0883e;--long:#8b5cf6;--strength:#3fb950;--deload:#3fb950;--warn:#f85149;--gold:#e3b341;
+  --display:'Barlow Condensed',system-ui,sans-serif;
+  --body:'Barlow',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.45;min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--easy);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:12px 16px 88px;padding:calc(12px + env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom))}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.5rem;letter-spacing:.01em}
+.icon-btn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--dim);flex:none}
+.icon-btn:hover{background:var(--card);color:var(--text)}
+
+/* week header */
+.weekhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.weekno{font-family:var(--display);font-weight:800;font-size:2.5rem;line-height:1}
+.phase{font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:99px;border:1px solid}
+.phase.build{color:var(--easy);border-color:#1f4a7a;background:#0f2438}
+.phase.deload{color:var(--deload);border-color:#1e5a2b;background:#0e2515}
+.cycle{display:flex;gap:6px;margin:14px 0 6px}
+.pill{flex:1;height:8px;border-radius:4px;background:var(--card2)}
+.pill.done{background:#1f4a7a}
+.pill.now{background:var(--easy)}
+.pill.dl{background:#173320}
+.pill.dl.now{background:var(--deload)}
+.cyclenote{font-size:.82rem;color:var(--dim)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 8px}
+.stat{background:var(--card);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-family:var(--display);font-size:1.55rem;line-height:1.1;font-weight:700}
+.stat span{font-size:.76rem;color:var(--dim)}
+.banner{background:#2a2110;border:1px solid #5b4514;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:.86rem}
+.banner button{color:var(--gold);font-weight:600;margin-top:4px;display:block}
+
+/* days and sessions */
+.day{display:grid;grid-template-columns:46px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.dlabel{font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--dim);padding-top:10px}
+.day.today .dlabel{color:var(--text)}
+.today-dot{display:block;width:6px;height:6px;border-radius:50%;background:var(--easy);margin-top:1px}
+.stack{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rest{color:#4b535d;font-size:.86rem;padding:10px 0}
+.sc{display:flex;align-items:stretch;background:var(--card);border-radius:10px;border-left:4px solid var(--c,var(--easy));min-width:0}
+.sc.choose{background:transparent;border:1px dashed var(--c);border-left:4px solid var(--c)}
+.sc .main{flex:1 1 auto;min-width:0;padding:10px 8px 10px 12px;display:block;cursor:pointer}
+.sc .t{display:block;font-weight:600}
+.sc .s{display:block;font-size:.82rem;color:var(--dim)}
+.sc.choose .s{color:var(--c)}
+.sc .tickwrap{display:flex;align-items:center;justify-content:center;flex:none;width:48px;padding:0 12px 0 4px}
+.tick{width:26px;height:26px;border-radius:50%;border:2px solid #3b434c;display:flex;align-items:center;justify-content:center;flex:none}
+.sc.done{opacity:.62}
+.sc.done .tick{background:var(--c);border-color:var(--c)}
+.finish{margin-top:14px}
+.linkbtn{display:block;margin:12px auto 0;color:var(--dim);font-size:.85rem;text-decoration:underline;text-underline-offset:3px}
+
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,17,23,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--border);z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+.tabs .in{display:flex;max-width:560px;margin:0 auto}
+.tabs button{flex:1;padding:13px 0 12px;font-size:.8rem;font-weight:600;color:var(--dim);text-align:center}
+.tabs button[aria-current=page]{color:var(--text);box-shadow:inset 0 2px 0 var(--easy)}
+
+/* generic sections */
+.sec-title{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.1;margin:6px 0 4px}
+.hint{font-size:.82rem;color:var(--dim);margin-top:6px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.pc{background:var(--card);border-radius:10px;padding:11px 12px;border-top:3px solid var(--c)}
+.pc .n{font-size:.8rem;color:var(--dim)}
+.pc .v{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.15}
+.pc .d{font-size:.78rem;color:var(--dim);margin-top:2px}
+table.tt{width:100%;border-collapse:collapse;margin-top:10px;font-size:.88rem}
+.tt th,.tt td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line)}
+.tt th{font-weight:600;color:var(--dim);font-size:.78rem}
+.tt td{font-variant-numeric:tabular-nums}
+.empty{background:var(--card);border-radius:10px;padding:16px;margin-top:12px;color:var(--dim);font-size:.9rem}
+.bars{display:flex;align-items:flex-end;gap:6px;height:96px;margin-top:12px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:.7rem;color:var(--dim)}
+.bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--easy);min-height:3px}
+.bar i.dl{background:var(--deload)}
+.list{margin-top:8px}
+.li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.li span:last-child{color:var(--dim);text-align:right}
+.dots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--card2);display:block}
+.dots i.on{background:var(--quality)}
+
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(1,4,9,.68);opacity:0;pointer-events:none;transition:opacity .18s;z-index:20}
+.overlay.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;max-height:90vh;overflow-y:auto;background:var(--card);border-radius:18px 18px 0 0;border:1px solid var(--border);border-bottom:0;transform:translateY(104%);transition:transform .22s ease,visibility 0s linear .22s;z-index:21;padding:8px 16px 24px;padding:8px 16px calc(24px + env(safe-area-inset-bottom));visibility:hidden}
+.sheet.on{transform:none;visibility:visible;transition:transform .22s ease,visibility 0s}
+.grab{width:40px;height:4px;border-radius:2px;background:#3b434c;margin:4px auto 12px}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.sh-title{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.08}
+.sh-sub{color:var(--dim);font-size:.86rem;margin-top:2px}
+.block{background:var(--card2);border-radius:10px;padding:11px 13px;margin-top:10px}
+.block h4{font-size:.8rem;font-weight:600;color:var(--dim);margin-bottom:4px}
+.block p{padding:2px 0}
+.block .big{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.2}
+.bigmin{font-family:var(--display);font-weight:800;font-size:3rem;line-height:1;margin-top:8px}
+.bigmin small{font-size:1.2rem;font-weight:700;color:var(--dim);margin-left:4px}
+.btn{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;font-weight:600;margin-top:10px;border:1px solid var(--border)}
+.btn.pri{background:var(--easy);color:#04101d;border-color:var(--easy)}
+.btn.ok{background:var(--strength);color:#04140a;border-color:var(--strength)}
+.btn.warn{color:var(--warn);border-color:#5b2323}
+.btn.sm{padding:10px;font-size:.9rem}
+.opt{display:block;width:100%;cursor:pointer;background:var(--card2);border-radius:10px;padding:11px 13px;margin-top:8px;border-left:4px solid var(--c,var(--quality))}
+.opt .t{display:block;font-weight:600}
+.opt .s{display:block;clear:both;font-size:.82rem;color:var(--dim);margin-top:1px}
+.tag{float:right;margin-left:8px;font-size:.72rem;font-weight:600;color:var(--c,var(--quality));white-space:nowrap}
+.grp{font-size:.82rem;font-weight:600;color:var(--dim);margin:16px 0 0}
+.grp small{display:block;font-weight:400;font-size:.78rem}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}
+.chips button{padding:8px 0;border-radius:8px;border:1px solid var(--border);font-size:.82rem;font-weight:600;color:var(--dim);text-align:center}
+.chips button[aria-pressed=true]{background:var(--card2);color:var(--text);border-color:var(--text)}
+.seg{display:flex;gap:5px}
+.seg button{flex:1 1 0;min-width:0;padding:10px 0;border-radius:8px;border:1px solid var(--border);font-weight:600;text-align:center}
+.seg button[aria-pressed=true]{background:var(--easy);color:#04101d;border-color:var(--easy)}
+.field{margin-top:16px}
+.field label{display:block;font-size:.86rem;color:var(--dim);margin-bottom:6px}
+.field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.err{color:var(--warn);font-size:.82rem;margin-top:6px}
+.ex{background:var(--card2);border-radius:10px;padding:11px 13px;margin-top:10px}
+.ex .nm{font-weight:600}
+.ex .nt{font-size:.8rem;color:var(--dim);margin-top:1px}
+.ex .tg{font-size:.84rem;margin-top:6px}
+.ex .last{font-size:.78rem;color:var(--dim)}
+.logrow{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.logrow label{font-size:.76rem;color:var(--dim);width:100%}
+.logrow input{width:64px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center}
+.logrow input[data-k=w]{width:76px;border-color:#2c4a35;margin-right:6px}
+.toast{position:fixed;left:50%;bottom:76px;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:#e6edf3;color:#0d1117;padding:9px 14px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:30;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){.sheet,.overlay,.toast{transition:none}}
+.pc .v small{font-size:.9rem;color:var(--dim);margin-left:2px;font-weight:600}
+/* v2 additions */
+.sc{position:relative;user-select:none;-webkit-user-select:none}
+.grip{display:flex;align-items:center;justify-content:center;width:26px;height:44px;flex:none;color:#4b535d;cursor:grab;touch-action:none;align-self:center}
+.grip svg{fill:currentColor}
+.sc.lifting{opacity:.35}
+.sc.ghost{position:fixed;z-index:40;pointer-events:none;box-shadow:0 12px 32px rgba(0,0,0,.6);opacity:.95}
+.day.over{background:#121a24;border-radius:10px}
+.day.over .dlabel{color:var(--easy)}
+button.rest{display:block;width:100%;text-align:left;color:#4b535d;font-size:.86rem;padding:10px 0}
+button.rest span{display:block;font-size:.74rem;color:#3b434c}
+.dnote{font-size:.74rem;color:var(--dim);padding:0 0 4px 4px}
+.sec-title.sub{font-size:1.2rem;margin-top:18px}
+.warnb{border-left:3px solid var(--gold)}
+.block.next{border-left:3px solid var(--easy)}
+.exh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.exh > div{flex:1 1 auto;min-width:0}
+.swap{flex:0 0 auto;width:52px;text-align:center;font-size:.78rem;font-weight:600;color:var(--easy);padding:4px 0;border:1px solid #1f4a7a;border-radius:8px;margin-top:2px;cursor:pointer}
+.steps{display:flex;gap:6px;margin:4px 0 14px}
+.steps span{flex:1;height:5px;border-radius:3px;background:var(--card2)}
+.steps span.done{background:#1f4a7a}
+.steps span.now{background:var(--easy)}
+.row{display:flex;gap:8px;margin-top:4px}
+.btn.half{flex:1;margin-top:10px}
+.seg button{padding:10px 2px;font-size:.86rem;line-height:1.2;min-width:0}
+textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font:inherit;color:var(--text);font-size:.78rem;word-break:break-all}
+.btn.sm.warn{margin-top:8px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">Blueprint Flex</div>
+    <button class="icon-btn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+  </div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Sections"><div class="in">
+  <button data-act="tab" data-arg="week" aria-current="page">Week</button>
+  <button data-act="tab" data-arg="paces">Paces</button>
+  <button data-act="tab" data-arg="progress">Progress</button>
+</div></nav>
+<div class="overlay" id="ov"></div>
+<div class="sheet" id="sh" tabindex="-1" role="dialog" aria-modal="true" aria-label="Details"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+/* ============ exercise library ============
+   pat: movement pattern (sessions are built from pattern slots)
+   eq: equipment levels this exercise works with: gym, db (dumbbells and bands), bw (bodyweight)
+   tr: tracked with weight and reps (double progression); otherwise reps or time only
+   Order within a pattern is priority: the first exercise that fits the equipment is the default. */
+const EXL = [
+  /* squat */
+  {id:'bsq', pat:'squat', eq:['gym'], n:'Back squat', nt:'Brace, sit between your hips, drive up. Keep the same depth every week.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'gob', pat:'squat', eq:['gym','db'], n:'Goblet squat', nt:'Hold the dumbbell at your chest, elbows inside your knees at the bottom.', tr:true, sets:3, lo:8, hi:12, inc:2},
+  {id:'fsq', pat:'squat', eq:['gym'], n:'Front squat', nt:'Elbows high, chest up. Lighter than a back squat and kinder on the back.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'lp', pat:'squat', eq:['gym'], n:'Leg press', nt:'Full range without your lower back rounding off the pad.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'bwsq', pat:'squat', eq:['bw'], n:'Tempo squat', nt:'Three seconds down, pause, drive up. Hold weight if you have any.', tr:false, sets:3, per:'12 to 15'},
+  /* hinge */
+  {id:'rdl', pat:'hinge', eq:['gym'], n:'Romanian deadlift', nt:'Soft knees, hips back, flat back. Stop when your hamstrings stretch, then stand up.', tr:true, sets:3, lo:6, hi:8, inc:5},
+  {id:'dbrdl', pat:'hinge', eq:['gym','db'], n:'Dumbbell Romanian deadlift', nt:'Weight is per dumbbell. Hips back, dumbbells close to your legs.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'tbdl', pat:'hinge', eq:['gym'], n:'Trap bar deadlift', nt:'Push the floor away. Easier to learn than a straight bar and just as useful.', tr:true, sets:3, lo:5, hi:8, inc:5},
+  {id:'ht', pat:'hinge', eq:['gym'], n:'Barbell hip thrust', nt:'Chin tucked, ribs down, squeeze at the top for a second.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'slrdl', pat:'hinge', eq:['gym','db','bw'], n:'Single-leg Romanian deadlift', nt:'Weight is one dumbbell, or none. Reps are each side. Slow and balanced beats heavy.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'gbr', pat:'hinge', eq:['bw'], n:'Glute bridge', nt:'Drive through your heels and squeeze at the top. Add a pause to make it harder.', tr:false, sets:3, per:'15'},
+  /* lunge and single leg */
+  {id:'bss', pat:'lunge', eq:['gym','db','bw'], n:'Bulgarian split squat', nt:'Weight is per dumbbell. Reps are each side. Front shin stays close to vertical.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'rlu', pat:'lunge', eq:['gym','db','bw'], n:'Reverse lunge', nt:'Step back, knee just off the floor, drive through the front heel. Reps are each side.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'stp', pat:'lunge', eq:['gym','db','bw'], n:'Step-up', nt:'Box at knee height. Push through the top foot, do not jump off the bottom one. Reps are each side.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'slsq', pat:'lunge', eq:['gym','db','bw'], n:'Single-leg squat to a box', nt:'Sit back to the box on one leg, stand up without rocking. Reps are each side.', tr:false, sets:3, per:'6 to 8 each side'},
+  /* horizontal push */
+  {id:'bb', pat:'hpush', eq:['gym'], n:'Barbell bench press', nt:'Feet planted, shoulder blades back, bar to mid chest.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'dbb', pat:'hpush', eq:['gym','db'], n:'Dumbbell bench press', nt:'Weight is per dumbbell. Lower under control, press without bouncing.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'mcp', pat:'hpush', eq:['gym'], n:'Machine chest press', nt:'Set the seat so the handles are level with your chest.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'pu', pat:'hpush', eq:['gym','db','bw'], n:'Push-up', nt:'Body in one line. Raise your feet or add a pause to make it harder.', tr:false, sets:3, per:'10 to 15'},
+  /* incline push */
+  {id:'idb', pat:'hpush_inc', eq:['gym','db'], n:'Incline dumbbell press', nt:'Weight is per dumbbell. Bench at about 30 degrees, elbows 45 degrees from your body.', tr:true, sets:3, lo:8, hi:12, inc:2},
+  {id:'ipu', pat:'hpush_inc', eq:['bw'], n:'Feet-elevated push-up', nt:'Feet on a step or chair. Chest to the floor.', tr:false, sets:3, per:'8 to 12'},
+  /* horizontal pull */
+  {id:'dbr', pat:'hpull', eq:['gym','db'], n:'One-arm dumbbell row', nt:'Weight is one dumbbell. Reps are each side. Pull to your hip, not your shoulder.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'csr', pat:'hpull', eq:['gym'], n:'Chest-supported row', nt:'Chest on the pad so your lower back is out of it. Squeeze at the top.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'scr', pat:'hpull', eq:['gym'], n:'Seated cable row', nt:'Sit tall, pull to your stomach, let your shoulders reach forward at the start.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'bbr', pat:'hpull', eq:['gym'], n:'Barbell row', nt:'Hinge to about 45 degrees, bar to your lower ribs. No heaving.', tr:true, sets:3, lo:6, hi:8, inc:2.5},
+  {id:'inv', pat:'hpull', eq:['gym','db','bw'], n:'Inverted row', nt:'Under a bar or a sturdy table. Walk your feet forward to make it harder.', tr:false, sets:3, per:'8 to 12'},
+  {id:'bndr', pat:'hpull', eq:['db'], n:'Band row', nt:'Anchor the band at chest height. Slow on the way back.', tr:false, sets:3, per:'12 to 15'},
+  /* vertical push */
+  {id:'dbo', pat:'vpush', eq:['gym','db'], n:'Dumbbell shoulder press', nt:'Weight is per dumbbell. Ribs down, do not arch your back.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'ohp', pat:'vpush', eq:['gym'], n:'Barbell overhead press', nt:'Squeeze your glutes so your back stays flat. Bar finishes over your mid foot.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'lmp', pat:'vpush', eq:['gym'], n:'Landmine press', nt:'Bar in a corner or landmine. Kind on cranky shoulders.', tr:true, sets:3, lo:8, hi:10, inc:2.5},
+  {id:'pike', pat:'vpush', eq:['bw'], n:'Pike push-up', nt:'Hips high, head towards the floor between your hands.', tr:false, sets:3, per:'8 to 12'},
+  /* vertical pull */
+  {id:'plu', pat:'vpull', eq:['gym','bw'], n:'Pull-up', nt:'Full hang at the bottom, chin over the bar. Add weight when you can do 10.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'ld', pat:'vpull', eq:['gym'], n:'Lat pulldown', nt:'Pull to your upper chest with elbows down. Keep the same grip each week.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'apu', pat:'vpull', eq:['gym'], n:'Assisted pull-up', nt:'Log the assistance weight. Progress means less help, not more.', tr:true, sets:3, lo:6, hi:8, inc:2.5},
+  {id:'bndp', pat:'vpull', eq:['db','bw'], n:'Band pulldown', nt:'Band over a door or bar. Pull to your chest, elbows down.', tr:false, sets:3, per:'12 to 15'},
+  /* core */
+  {id:'pal', pat:'core_anti', eq:['gym','db'], n:'Pallof press', nt:'Resist the cable or band pulling you round. Slow and square. Reps are each side.', tr:false, sets:2, per:'10 each side'},
+  {id:'scar', pat:'core_anti', eq:['gym','db'], n:'Suitcase carry', nt:'One heavy dumbbell, walk tall without leaning. Distance is each side.', tr:true, sets:2, lo:30, hi:40, inc:2, unit:'m'},
+  {id:'spl', pat:'core_anti', eq:['gym','db','bw'], n:'Side plank', nt:'A straight line from head to heel. Time is each side.', tr:false, sets:2, per:'30 to 45 s each side'},
+  {id:'db', pat:'core', eq:['gym','db','bw'], n:'Dead bug', nt:'Lower back flat to the floor the whole time. Reps are each side.', tr:false, sets:2, per:'8 to 10 each side'},
+  {id:'hkr', pat:'core', eq:['gym'], n:'Hanging knee raise', nt:'Control the swing. Curl your hips up, not just your knees.', tr:false, sets:3, per:'8 to 12'},
+  {id:'pl', pat:'core', eq:['gym','db','bw'], n:'Plank', nt:'Squeeze your glutes and push the floor away. Stop when your hips sag.', tr:false, sets:2, per:'45 to 60 s'},
+  {id:'bdog', pat:'core', eq:['gym','db','bw'], n:'Bird dog', nt:'Opposite arm and leg, hold two seconds, no twisting. Reps are each side.', tr:false, sets:2, per:'8 each side'},
+  /* hips (the running prehab that the evidence supports) */
+  {id:'lbw', pat:'hip', eq:['gym','db'], n:'Lateral band walk', nt:'Band above the knees, small steps, hips level, toes forward. Steps are each way.', tr:false, sets:2, per:'12 steps each way'},
+  {id:'slgb', pat:'hip', eq:['gym','db','bw'], n:'Single-leg glute bridge', nt:'Drive through the heel and keep your hips level at the top. Reps are each side.', tr:false, sets:3, per:'10 each side'},
+  {id:'clam', pat:'hip', eq:['gym','db','bw'], n:'Clamshell', nt:'Band above the knees if you have one. Open the top knee without rolling back. Reps are each side.', tr:false, sets:2, per:'15 each side'},
+  {id:'slr', pat:'hip', eq:['gym','db','bw'], n:'Side-lying leg raise', nt:'Toes pointing slightly down, lift from the hip. Reps are each side.', tr:false, sets:2, per:'15 each side'},
+  {id:'cop', pat:'hip', eq:['gym','db','bw'], n:'Copenhagen plank', nt:'Top foot on a bench, lift the bottom leg to meet it. Time is each side. Start on your knee.', tr:false, sets:2, per:'20 to 30 s each side'},
+  /* calves */
+  {id:'slcr', pat:'calf', eq:['gym','db','bw'], n:'Single-leg calf raise', nt:'Full range off a step, slow on the way down. Reps are each side.', tr:false, sets:3, per:'10 to 15 each side'},
+  {id:'scalf', pat:'calf', eq:['gym'], n:'Seated calf raise', nt:'Bent knee hits the deeper calf muscle that runners rely on.', tr:true, sets:3, lo:10, hi:15, inc:5},
+  {id:'ecc', pat:'calf', eq:['gym','db','bw'], n:'Eccentric heel drop', nt:'Up on both feet, down slowly on one. Mid-tendon Achilles issues only, and see a physio before starting.', tr:false, sets:3, per:'15 each side'},
+  /* arms and shoulders */
+  {id:'tpd', pat:'tri', eq:['gym'], n:'Triceps pushdown', nt:'Elbows pinned to your sides.', tr:true, sets:3, lo:10, hi:15, inc:2.5},
+  {id:'dbsc', pat:'tri', eq:['gym','db'], n:'Dumbbell skull crusher', nt:'Weight is per dumbbell. Lower to beside your ears.', tr:true, sets:3, lo:10, hi:12, inc:1},
+  {id:'dpu', pat:'tri', eq:['bw'], n:'Close-grip push-up', nt:'Hands under your shoulders, elbows brushing your ribs.', tr:false, sets:3, per:'8 to 12'},
+  {id:'curl', pat:'bi', eq:['gym','db'], n:'Dumbbell curl', nt:'Weight is per dumbbell. No swinging.', tr:true, sets:3, lo:10, hi:12, inc:1},
+  {id:'bcurl', pat:'bi', eq:['db','bw'], n:'Band curl', nt:'Stand on the band. Slow on the way down.', tr:false, sets:3, per:'12 to 15'},
+  {id:'chin', pat:'bi', eq:['gym','bw'], n:'Chin-up', nt:'Palms facing you. Lower all the way.', tr:false, sets:3, per:'5 to 8'},
+  {id:'lat', pat:'delt', eq:['gym','db'], n:'Lateral raise', nt:'Weight is per dumbbell. Lead with your elbows, stop at shoulder height.', tr:true, sets:3, lo:12, hi:15, inc:1},
+  {id:'blat', pat:'delt', eq:['bw'], n:'Band lateral raise', nt:'Stand on the band. Pause at the top.', tr:false, sets:3, per:'15'},
+  {id:'fp', pat:'rear', eq:['gym'], n:'Face pull', nt:'Rope to your forehead, elbows high. Light and strict.', tr:true, sets:3, lo:12, hi:15, inc:2.5},
+  {id:'bpa', pat:'rear', eq:['gym','db','bw'], n:'Band pull-apart', nt:'Arms straight, squeeze your shoulder blades. No band? Use a towel and pull it tight.', tr:false, sets:3, per:'15 to 20'},
+  /* mobility (specific restrictions only, kept short) */
+  {id:'m90', pat:'mob_hip', eq:['gym','db','bw'], n:'90/90 hip switch', nt:'Both legs at right angles, rotate from one side to the other without using your hands.', tr:false, sets:2, per:'8 switches'},
+  {id:'mcouch', pat:'mob_hipflex', eq:['gym','db','bw'], n:'Couch stretch', nt:'Back foot up against a wall, squeeze the glute on that side. Time is each side.', tr:false, sets:2, per:'45 s each side'},
+  {id:'mankle', pat:'mob_ankle', eq:['gym','db','bw'], n:'Ankle rock', nt:'Knee over toes towards a wall, heel down. Reps are each side.', tr:false, sets:2, per:'12 each side'},
+  {id:'mtsp', pat:'mob_tspine', eq:['gym','db','bw'], n:'Thoracic rotation', nt:'On all fours, hand behind your head, rotate the elbow up and back. Reps are each side.', tr:false, sets:2, per:'10 each side'},
+  {id:'mwgs', pat:'mob_global', eq:['gym','db','bw'], n:'World\u2019s greatest stretch', nt:'Deep lunge, elbow to the floor, rotate and reach up. Reps are each side.', tr:false, sets:2, per:'5 each side'},
+  {id:'mtfl', pat:'mob_hip', eq:['gym','db','bw'], n:'TFL roll', nt:'Roll the muscle on the front of the hip, not the IT band itself. One minute each side.', tr:false, sets:1, per:'1 min each side'}
+];
+const EXMAP = {};
+EXL.forEach(e => { EXMAP[e.id] = e; });
+const PATNAME = {squat:'Squat', hinge:'Hinge', lunge:'Single leg', hpush:'Horizontal push', hpush_inc:'Incline push', hpull:'Row', vpush:'Overhead press', vpull:'Pull-up or pulldown', core:'Core', core_anti:'Anti-rotation', hip:'Hips', calf:'Calves', tri:'Triceps', bi:'Biceps', delt:'Shoulders', rear:'Rear shoulders', mob_hip:'Hip mobility', mob_hipflex:'Hip flexors', mob_ankle:'Ankles', mob_tspine:'Upper back', mob_global:'Full body'};
+
+/* strength session templates: pattern slots, resolved to exercises by equipment and niggle */
+const SS = {
+  FBA:{name:'Full body A', sub:'Squat and press', lower:true, min:45, slots:['squat','hpush','hpull','hip','core_anti']},
+  FBB:{name:'Full body B', sub:'Hinge and pull', lower:true, min:45, slots:['hinge','vpush','vpull','hip','core']},
+  FBC:{name:'Full body C', sub:'Single leg and incline', lower:true, min:45, slots:['lunge','hpush_inc','hpull','calf','core_anti']},
+  UPA:{name:'Upper A', sub:'Press biased, easy on the legs', lower:false, min:40, slots:['hpush','hpull','vpush','tri','core_anti']},
+  UPB:{name:'Upper B', sub:'Pull biased, easy on the legs', lower:false, min:40, slots:['vpull','hpush_inc','hpull','bi','rear']},
+  LOA:{name:'Lower A', sub:'Squat biased', lower:true, min:45, slots:['squat','lunge','hinge','hip','calf']},
+  LOB:{name:'Lower B', sub:'Hinge biased', lower:true, min:45, slots:['hinge','lunge','squat','hip','core']},
+  PUSH:{name:'Push', sub:'Chest, shoulders and triceps', lower:false, min:40, slots:['hpush','vpush','hpush_inc','delt','tri']},
+  PULL:{name:'Pull', sub:'Back and biceps', lower:false, min:40, slots:['vpull','hpull','rear','bi','core']},
+  LEGS:{name:'Legs', sub:'The full lower body', lower:true, min:45, slots:['squat','hinge','lunge','hip','calf']},
+  CORE:{name:'Hips and core', sub:'Runner prehab, 25 minutes', lower:false, min:25, slots:['hip','core_anti','core','calf']},
+  MOB:{name:'Mobility', sub:'20 minutes for stiff hips and ankles', lower:false, min:20, slots:['mob_hip','mob_hipflex','mob_ankle','mob_tspine','mob_global']}
+};
+const SPLIT = {0:[], 1:['FBA'], 2:['FBA','FBB'], 3:['FBA','FBB','FBC'], 4:['UPA','LOA','UPB','LOB'], 5:['UPA','LOA','UPB','LOB','CORE'], 6:['PUSH','PULL','LEGS','UPA','LOB','CORE'], 7:['PUSH','PULL','LEGS','UPA','LOB','CORE','MOB']};
+/* exercises a niggle prefers in a slot, if the equipment allows */
+const NIGGLE_PREF = {itb:{hip:'lbw', calf:'slcr', core:'spl'}, calf:{calf:'ecc', hip:'slgb'}, none:{}};
+const NIGGLE_AVOID = {itb:[], calf:['stp'], none:[]};
+
+/* ============ quality session library ============ */
+const FAM = {
+  thr:{name:'Threshold', blurb:'Hold a faster pace for longer'},
+  vo2:{name:'VO2max', blurb:'Raise your ceiling'},
+  spd:{name:'Speed and hills', blurb:'Economy and leg strength'},
+  mix:{name:'Mixed', blurb:'Variety, less structured'}
+};
+const Q = [
+  {id:'tempo', name:'Tempo run', fam:'thr', kind:'cont', pace:'thr', lv:[15,20,25,30,35,40], gentle:true,
+   tip:'Comfortably hard. You can say a few words, not a sentence. If you are gasping, you are over pace.'},
+  {id:'cruise', name:'Threshold 1 km repeats', fam:'thr', kind:'rep', pace:'thr', dist:1000, lv:[4,5,6,7,8], rec:60, recHow:'easy jog, do not stop',
+   tip:'The jog is part of the session. The last rep should feel like the first.'},
+  {id:'cruiset', name:'Cruise intervals', fam:'thr', kind:'time', pace:'thr', lv:[[4,5],[5,5],[3,8],[3,10],[2,15]], recs:[60,60,90,90,120], recHow:'easy jog, do not stop', gentle:true,
+   tip:'Same effort as a tempo run, broken up so it costs your legs less.'},
+  {id:'km', name:'1 km repeats', fam:'vo2', kind:'rep', pace:'i', dist:1000, lv:[3,4,5,6], rec:180, recHow:'easy jog or walk',
+   tip:'Hard but repeatable. If rep times drift more than 5 s slower, stop the session early.'},
+  {id:'m800', name:'800 m repeats', fam:'vo2', kind:'rep', pace:'i', dist:800, lv:[4,5,6,7,8], rec:150, recHow:'easy jog',
+   tip:'Hard but repeatable. Keep every rep within 5 s of the first.'},
+  {id:'f4', name:'4 minute intervals', fam:'vo2', kind:'time', pace:'f4', lv:[[3,4],[4,4],[5,4]], rec:180, recHow:'easy jog',
+   tip:'About 8 out of 10 effort. Finish the last rep as strong as the first.'},
+  {id:'thirty', name:'30 seconds on, 30 off', fam:'vo2', kind:'alt', pace:'i', lv:[10,14,18,22,26], gentle:true,
+   tip:'Short and sharp. Controlled, not a sprint. It is easy to start too fast.'},
+  {id:'m400', name:'400 m repeats', fam:'spd', kind:'rep', pace:'r', dist:400, lv:[6,8,10,12], rec:180, recHow:'walk or very easy jog, full recovery', caution:['calf'],
+   tip:'Fast and relaxed. Full recovery matters here. Stop if your form falls apart.'},
+  {id:'hsprint', name:'Hill sprints', fam:'spd', kind:'hsprint', lv:[[8,10],[10,10],[10,12],[12,12],[12,15]], caution:['calf'],
+   tip:'Near all-out but smooth. The hill limits the speed, which keeps it safe. Walk all the way back down.'},
+  {id:'hrep', name:'Hill repeats', fam:'spd', kind:'hrep', lv:[[6,60],[7,60],[6,90],[8,90],[8,120]], caution:['itb','calf'],
+   tip:'Strong and steady up the hill, about 5K effort. Jog down gently; if your knee complains on the descent, walk it.'},
+  {id:'fart', name:'Fartlek', fam:'mix', kind:'fart', gentle:true,
+   lv:[{t:'8 x 1 min hard, 1 min easy', m:16}, {t:'10 x 1 min hard, 1 min easy', m:20}, {t:'5 x 3 min hard, 2 min easy', m:25}, {t:'6 x 3 min hard, 2 min easy', m:30}, {t:'Mona fartlek: 2 x 90 s, 4 x 60 s, 4 x 30 s, 4 x 15 s, each with an equal easy float', m:20}],
+   tip:'Hard means breathing hard but in control, about 7 to 8 out of 10. The easy part is a slow jog.'},
+  {id:'prog', name:'Progression run', fam:'mix', kind:'prog', lv:[30,35,40,45,50], gentle:true,
+   tip:'Start easy and finish strong. If the last third is a struggle, you started too fast.'}
+];
+const qById = id => Q.find(q => q.id === id);
+
+/* ============ helpers ============ */
+const DAYS = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+const DAY3 = {MON:'Mon',TUE:'Tue',WED:'Wed',THU:'Thu',FRI:'Fri',SAT:'Sat',SUN:'Sun'};
+const DAYLONG = {MON:'Monday',TUE:'Tuesday',WED:'Wednesday',THU:'Thursday',FRI:'Friday',SAT:'Saturday',SUN:'Sunday'};
+const STORE = 'bpflex.v2';
+const COL = {easy:'var(--easy)', quality:'var(--quality)', long:'var(--long)', strength:'var(--strength)'};
+const TYPENAME = {easy:'Easy run', quality:'Quality run', long:'Long run', strength:'Strength'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => (n < 10 ? '0' : '') + n;
+const toISO = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const mondayOf = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
+const todayKey = () => DAYS[(new Date().getDay()+6)%7];
+const r5 = n => Math.round(n/5)*5;
+const clamp = (n,a,b) => Math.max(a, Math.min(b, n));
+const fmtPace = s => { s = Math.round(s); return Math.floor(s/60) + ':' + pad(s%60); };
+const fmtTime = s => { s = Math.round(s); return Math.floor(s/60) + ':' + pad(s%60); };
+const fmtHM = min => { min = Math.round(min); const h = Math.floor(min/60), m = min%60; return h ? (h + ' h' + (m ? ' ' + m + ' min' : '')) : (m + ' min'); };
+const parseTime = str => { const m = String(str).trim().match(/^(\d{1,2}):(\d{2})$/); return m ? (+m[1])*60 + (+m[2]) : null; };
+const distTxt = m => m >= 1000 ? (m/1000) + ' km' : m + ' m';
+const recTxt = sec => { const m = Math.floor(sec/60), s = sec%60; return (m ? m + ' min' : '') + (m && s ? ' ' : '') + (s ? s + ' s' : ''); };
+const nextDay = d => DAYS[(DAYS.indexOf(d) + 1) % 7];
+const prevDay = d => DAYS[(DAYS.indexOf(d) + 6) % 7];
+let uidN = 0;
+const uid = p => p + '-' + (++uidN) + '-' + Math.random().toString(36).slice(2, 6);
+
+/* ============ state ============ */
+const fresh = () => ({
+  v:2,
+  profile:{setup:false, focus:'both', runDays:4, strengthDays:2, fiveK:null, longMin:60, longCap:120, buildWeeks:3, equipment:'gym', niggle:'none', freeDay:'MON', testWeek:1, startedLong:60},
+  template:[],                       /* the week plan: [{id, type, day, key (strength), strides}] */
+  week:{no:1, kind:'build', pos:1, level:0, resume:1, start:'', done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}},
+  levels:{}, qLast:{}, lifts:{}, swaps:{}, history:[], tab:'week'
+});
+const merge = (base, o) => {
+  Object.keys(o).forEach(k => {
+    if (o[k] && typeof o[k] === 'object' && !Array.isArray(o[k]) && base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) base[k] = merge(base[k], o[k]);
+    else base[k] = o[k];
+  });
+  return base;
+};
+const load = () => {
+  try { const raw = localStorage.getItem(STORE); if (raw) { const o = JSON.parse(raw); if (o && o.v === 2) return merge(fresh(), o); } } catch (e) {}
+  return fresh();
+};
+let S = load();
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
+
+/* ============ pace engine (Daniels VDOT from a recent 5K) ============ */
+const vdotOf = sec => {
+  const t = sec/60, v = 5000/t;
+  const vo2 = -4.60 + 0.182258*v + 0.000104*v*v;
+  const pct = 0.8 + 0.1894393*Math.exp(-0.012778*t) + 0.2989558*Math.exp(-0.1932605*t);
+  return vo2/pct;
+};
+const paceAt = (vd, f) => { const a = 0.000104, b = 0.182258, c = -(4.60 + f*vd); return 60000/((-b + Math.sqrt(b*b - 4*a*c))/(2*a)); };
+const hasPaces = () => !!S.profile.fiveK;
+const P = () => {
+  if (!hasPaces()) return null;
+  const vd = vdotOf(S.profile.fiveK), i = paceAt(vd, 0.975);
+  return {vd:vd, easy:paceAt(vd, 0.70), thr:paceAt(vd, 0.88), f4:paceAt(vd, 0.95), i:i, r:i/1.05};
+};
+const EFFORT = {easy:'easy, full sentences', thr:'comfortably hard, a few words at a time', f4:'hard, about 8 out of 10', i:'hard, just quicker than 5K effort', r:'fast and relaxed, about mile effort'};
+const paceOf = k => { const p = P(); return p ? (p[k] || p.i) : null; };
+const pn = k => { const p = paceOf(k); return p ? fmtPace(p) + '/km' : EFFORT[k]; };
+const beginner = () => S.profile.longMin < 30 || (S.profile.fiveK && S.profile.fiveK > 35*60);
+
+/* ============ weekly run volume (minutes) ============ */
+const EFRAC = {E1:0.6, E2:0.5, E3:0.5, E4:0.45, E5:0.4, E6:0.35};
+const vol = (level, deload) => {
+  const p = S.profile, f = deload ? 0.7 : 1, g = p.focus === 'strength' ? 1.05 : 1.07;
+  const longStart = clamp(r5(p.startedLong || p.longMin), 30, p.longCap);
+  const Lraw = Math.min(p.longCap, r5(longStart*Math.pow(g, level)));
+  const o = {L:r5(Lraw*f), capped:Lraw >= p.longCap};
+  Object.keys(EFRAC).forEach(k => {
+    const base = clamp(r5(longStart*EFRAC[k]), 20, 60);
+    o[k] = r5(Math.min(75, r5(base*Math.pow(1.05, level)))*f);
+  });
+  return o;
+};
+
+/* ============ week generator ============ */
+const RUN_ROLES = {0:[], 1:['L'], 2:['Q','L'], 3:['E1','Q','L'], 4:['E1','Q','E2','L'], 5:['E1','Q','E2','E3','L'], 6:['E1','Q','E2','E3','E4','L'], 7:['E1','Q','E2','E3','Q2','E4','E5','L'].slice(0,7)};
+RUN_ROLES[7] = ['E1','Q','E2','E3','Q2','E4','L'];
+const roleType = r => r[0] === 'E' ? 'easy' : r === 'L' ? 'long' : 'quality';
+const genTemplate = p => {
+  const used = {}, out = [];
+  const take = (prefs, allowFree) => {
+    for (let i = 0; i < prefs.length; i++) { const d = prefs[i]; if (!used[d] && (allowFree || d !== p.freeDay)) return d; }
+    for (let i = 0; i < DAYS.length; i++) { const d = DAYS[i]; if (!used[d] && (allowFree || d !== p.freeDay)) return d; }
+    return null;
+  };
+  const n = clamp(p.runDays, 0, 7), roles = RUN_ROLES[n];
+  const prefs = {
+    L:['SUN','SAT','FRI'],
+    Q:n >= 5 ? ['WED','THU','TUE'] : ['THU','WED','TUE'],
+    Q2:['FRI','TUE','SAT','MON'],
+    E:['TUE','SAT','FRI','MON','WED','THU','SUN']
+  };
+  ['L','Q','Q2'].forEach(r => { if (roles.indexOf(r) >= 0) { const d = take(prefs[r], n === 7); used[d] = r; } });
+  roles.filter(r => r[0] === 'E').forEach(r => { const d = take(prefs.E, n === 7); used[d] = r; });
+  Object.keys(used).forEach(d => out.push({id:uid('r'), type:roleType(used[d]), day:d, role:used[d], strides:false}));
+  /* strides on the easy run before the long run, and on one more if there are three or more easy runs */
+  const easies = out.filter(s => s.type === 'easy').sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day));
+  if (easies.length) {
+    const L = out.find(s => s.type === 'long');
+    let pick = L ? easies.filter(s => DAYS.indexOf(s.day) < DAYS.indexOf(L.day)).pop() : null;
+    (pick || easies[easies.length - 1]).strides = true;
+    if (easies.length >= 3) { const first = easies.find(s => !s.strides); if (first) first.strides = true; }
+  }
+  /* strength */
+  const m = clamp(p.strengthDays, 0, 7), keys = SPLIT[m] || [];
+  const hard = {}, before = {};
+  out.forEach(s => { if (s.type === 'quality' || s.type === 'long') { hard[s.day] = s.type; before[prevDay(s.day)] = true; } });
+  const runOn = {}; out.forEach(s => { runOn[s.day] = true; });
+  const cost = (d, lower, allowFree) => {
+    let c = 0;
+    if (d === p.freeDay) c += allowFree ? 0 : 50;
+    if (hard[d] === 'long') c += 6; else if (hard[d] === 'quality') c += 5; else if (runOn[d]) c += 1;
+    if (before[d]) c += lower ? 4 : 1;
+    return c;
+  };
+  const sUsed = {};
+  const order = keys.slice().sort((a, b) => (SS[b].lower ? 1 : 0) - (SS[a].lower ? 1 : 0));
+  order.forEach(k => {
+    const lower = SS[k].lower, allowFree = m === 7;
+    let best = null, bc = Infinity;
+    DAYS.forEach(d => { const c = cost(d, lower, allowFree) + (sUsed[d] ? 100 : 0); if (c < bc) { bc = c; best = d; } });
+    sUsed[best] = true;
+    out.push({id:uid('s'), type:'strength', day:best, key:k});
+  });
+  return out;
+};
+const sortTemplate = t => t.slice().sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || (a.type === 'strength' ? 1 : 0) - (b.type === 'strength' ? 1 : 0));
+const tpl = () => sortTemplate(S.template);
+const slotById = id => S.template.find(s => s.id === id);
+
+/* ============ strength resolution ============ */
+const fitsEq = e => e.eq.indexOf(S.profile.equipment) >= 0;
+const candidates = pat => EXL.filter(e => e.pat === pat && fitsEq(e) && NIGGLE_AVOID[S.profile.niggle].indexOf(e.id) < 0);
+const resolveSlot = (key, i) => {
+  const pat = SS[key].slots[i], sw = S.swaps[key] && S.swaps[key][i];
+  if (sw && EXMAP[sw] && fitsEq(EXMAP[sw])) return EXMAP[sw];
+  const pref = NIGGLE_PREF[S.profile.niggle][pat];
+  if (pref && EXMAP[pref] && fitsEq(EXMAP[pref])) return EXMAP[pref];
+  const c = candidates(pat);
+  return c[0] || null;
+};
+const sessionEx = key => SS[key].slots.map((pat, i) => resolveSlot(key, i)).filter(Boolean);
+const maintain = () => S.profile.focus === 'run';
+const setsFor = (e, dl) => { const n = maintain() && e.tr ? Math.max(2, e.sets - 1) : e.sets; return dl ? Math.max(1, Math.round(n/2)) : n; };
+const e1rm = (w, r) => r === 1 ? w : w*(1 + r/30);
+
+/* ============ quality builder ============ */
+const buildQ = (q, lvl, dl) => {
+  const L = Math.min(lvl, q.lv.length - 1), v = q.lv[L], k = dl ? 0.6 : 1, p = P();
+  const o = {warm:'2 km easy jogging', cool:'1.5 km easy jogging', prep:null, lines:[], summary:'', main:20, level:L, top:L >= q.lv.length - 1};
+  if (q.pace === 'i' || q.pace === 'r' || q.pace === 'f4' || q.kind === 'hsprint') o.prep = '4 x 20 s strides to open up, walking back between';
+  const per = d => p ? ', about ' + fmtTime(paceOf(q.pace)*d/1000) + ' per rep' : '';
+  if (q.kind === 'cont') {
+    const m = dl ? Math.max(10, r5(v*k)) : v; o.main = m; o.summary = m + ' min at ' + pn(q.pace); o.lines.push(m + ' minutes continuous at ' + pn(q.pace));
+  } else if (q.kind === 'rep') {
+    const n = dl ? Math.max(2, Math.round(v*k)) : v; o.main = Math.round(n*((p ? paceOf(q.pace)*q.dist/1000 : 240) + q.rec)/60);
+    o.summary = n + ' x ' + distTxt(q.dist) + ' at ' + pn(q.pace); o.lines.push(n + ' x ' + distTxt(q.dist) + ' at ' + pn(q.pace) + per(q.dist)); o.lines.push('Recovery: ' + recTxt(q.rec) + ', ' + q.recHow);
+  } else if (q.kind === 'time') {
+    const n = dl ? Math.max(2, Math.round(v[0]*k)) : v[0], m = v[1], rec = q.recs ? q.recs[L] : q.rec; o.main = Math.round(n*(m + rec/60));
+    o.summary = n + ' x ' + m + ' min at ' + pn(q.pace); o.lines.push(n + ' x ' + m + ' min at ' + pn(q.pace) + (p ? ', about ' + (m*60/paceOf(q.pace)).toFixed(1) + ' km each' : '')); o.lines.push('Recovery: ' + recTxt(rec) + ', ' + q.recHow);
+  } else if (q.kind === 'alt') {
+    const n = dl ? Math.max(6, Math.round(v*k)) : v; o.main = n; o.summary = n + ' x 30 s fast, 30 s easy';
+    o.lines.push(n + ' rounds: 30 s fast at ' + pn(q.pace) + (p ? ' (about ' + Math.round(30000/paceOf(q.pace)/10)*10 + ' m)' : '') + ', then 30 s easy jog'); o.lines.push('Run it by time, no measuring needed.');
+  } else if (q.kind === 'hsprint') {
+    const n = dl ? Math.max(4, Math.round(v[0]*k)) : v[0]; o.main = Math.round(n*1.5); o.summary = n + ' x ' + v[1] + ' s hill sprints';
+    o.lines.push(n + ' x ' + v[1] + ' s sprints uphill on a steep hill (6 to 10 percent)'); o.lines.push('Recovery: walk all the way back down, then go again');
+  } else if (q.kind === 'hrep') {
+    const n = dl ? Math.max(3, Math.round(v[0]*k)) : v[0]; o.main = Math.round(n*v[1]*2.2/60); o.summary = n + ' x ' + v[1] + ' s hill repeats';
+    o.lines.push(n + ' x ' + v[1] + ' s uphill at about 5K effort'); o.lines.push('Recovery: jog back down');
+  } else if (q.kind === 'fart') {
+    o.main = v.m; o.summary = v.t.length > 34 ? 'Mona fartlek' : v.t; o.lines.push(v.t); o.lines.push('Hard is about 10K to 5K effort. The easy part is a slow jog, not a walk.');
+  } else if (q.kind === 'prog') {
+    const m = dl ? Math.max(20, r5(v*k)) : v, t = Math.round(m/3); o.main = m; o.summary = m + ' min, easy to threshold';
+    o.lines.push(t + ' min easy' + (p ? ' (slower than ' + fmtPace(p.easy) + '/km)' : '')); o.lines.push(t + ' min steady, a gear up but still comfortable'); o.lines.push((m - 2*t) + ' min at threshold, ' + pn('thr'));
+  }
+  return o;
+};
+const qPool = () => Q.filter(q => !beginner() || q.gentle);
+const suggestQ = exclude => {
+  const dl = S.week.kind === 'deload', pool = qPool().filter(q => (!dl || q.gentle) && (exclude || []).indexOf(q.id) < 0);
+  const lastFam = S.qLast.__fam;
+  let best = pool[0], bw = Infinity;
+  pool.forEach(q => { const w = (S.qLast[q.id] === undefined ? -1 : S.qLast[q.id]) + (q.fam === lastFam ? 0.5 : 0) + ((q.caution || []).indexOf(S.profile.niggle) >= 0 ? 2 : 0); if (w < bw) { bw = w; best = q; } });
+  return best ? best.id : null;
+};
+const autoPick = () => { /* fill every quality slot with a suggestion for this week */
+  const w = S.week, picked = [];
+  tpl().filter(s => s.type === 'quality').forEach(s => {
+    if (!w.picks[s.id] || !qById(w.picks[s.id])) { const id = suggestQ(picked); if (id) { w.picks[s.id] = id; w.auto[s.id] = true; } }
+    picked.push(w.picks[s.id]);
+  });
+};
+
+/* ============ session info for cards ============ */
+const sessInfo = s => {
+  const w = S.week, dl = w.kind === 'deload', v = vol(w.level, dl), p = P();
+  if (s.type === 'easy') { const m = v[s.role] || v.E2; return {t:'Easy run', s:m + ' min' + (p ? ', slower than ' + fmtPace(p.easy) + '/km' : ', easy effort') + (s.strides ? ', plus strides' : ''), c:'easy', min:m}; }
+  if (s.type === 'long') return {t:'Long run', s:v.L + ' min easy' + (v.capped && !dl ? ', at your ceiling' : ''), c:'long', min:v.L};
+  if (s.type === 'quality') {
+    const q = qById(w.picks[s.id]);
+    if (!q) return {t:'Quality run', s:'Tap to choose a session', c:'quality', min:45, choose:true};
+    const b = buildQ(q, S.levels[q.id] || 0, dl);
+    return {t:q.name, s:b.summary + (w.auto[s.id] ? ', suggested' : ''), c:'quality', min:b.main + 23};
+  }
+  const ss = SS[s.key];
+  return {t:ss ? ss.name : 'Strength', s:ss ? ss.sub : 'Tap to choose a session', c:'strength', min:0, choose:!ss};
+};
+const runMinutesPlanned = () => { let t = 0; tpl().forEach(s => { if (s.type !== 'strength') t += sessInfo(s).min; }); return t; };
+const nextWeekPreview = (feel, repeat) => {
+  const w = S.week, p = S.profile;
+  if (w.kind === 'deload') return {kind:'build', pos:1, level:w.resume, resume:w.resume, label:'Build week 1 of ' + p.buildWeeks};
+  if (feel === 'tough') return {kind:'deload', pos:w.pos, level:w.level, resume:w.level, label:'Lighter week, then back to building'};
+  if (repeat) return {kind:'build', pos:w.pos, level:w.level, resume:w.resume, label:'Build week ' + w.pos + ' of ' + p.buildWeeks + ' again, same level'};
+  const step = feel === 'easy' ? 2 : 1, lvl = w.level + step, pos = w.pos + 1;
+  if (pos > p.buildWeeks) return {kind:'deload', pos:p.buildWeeks, level:w.level, resume:lvl, label:'Lighter week'};
+  return {kind:'build', pos:pos, level:lvl, resume:lvl, label:'Build week ' + pos + ' of ' + p.buildWeeks};
+};
+
+/* ============ small ui helpers ============ */
+const ov = $('ov'), sh = $('sh');
+const openSheet = html => { sh.innerHTML = '<div class="grab"></div>' + html; sh.classList.add('on'); ov.classList.add('on'); sh.scrollTop = 0; try { sh.focus({preventScroll:true}); } catch (e) {} };
+const closeSheet = () => { sh.classList.remove('on'); ov.classList.remove('on'); };
+const head = (title, sub) => '<div class="sh-head"><div><div class="sh-title">' + esc(title) + '</div>' + (sub ? '<div class="sh-sub">' + esc(sub) + '</div>' : '') + '</div><button class="icon-btn" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button></div>';
+const toTop = () => { try { window.scrollTo(0, 0); } catch (e) {} };
+let toastTimer = null;
+const toast = msg => { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2200); };
+const tickSvg = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#0d1117" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const gripSvg = '<svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true"><circle cx="2.5" cy="2" r="1.6"/><circle cx="7.5" cy="2" r="1.6"/><circle cx="2.5" cy="8" r="1.6"/><circle cx="7.5" cy="8" r="1.6"/><circle cx="2.5" cy="14" r="1.6"/><circle cx="7.5" cy="14" r="1.6"/></svg>';
+const moveRow = s => '<div class="block"><h4>Move this session to</h4><div class="chips">' + DAYS.map(d => '<button data-act="move" data-arg="' + s.id + '|' + d + '" aria-pressed="' + (s.day === d) + '">' + DAY3[d] + '</button>').join('') + '</div></div>';
+const seg = (key, vals, cur, labels) => '<div class="seg" data-key="' + key + '">' + vals.map((v, i) => '<button type="button" data-act="seg" data-key="' + key + '" data-arg="' + v + '" aria-pressed="' + (String(v) === String(cur)) + '">' + (labels ? labels[i] : v) + '</button>').join('') + '</div>';
+
+/* ============ week tab ============ */
+const card = s => {
+  const i = sessInfo(s), dn = !!S.week.done[s.id];
+  return '<div class="sc' + (i.choose ? ' choose' : '') + (dn ? ' done' : '') + '" data-slot="' + s.id + '" style="--c:' + COL[i.c] + '">'
+    + '<span class="grip" data-drag="' + s.id + '" title="Drag to another day" aria-hidden="true">' + gripSvg + '</span>'
+    + '<div role="button" tabindex="0" class="main" data-act="open" data-arg="' + s.id + '"><span class="t">' + esc(i.t) + '</span><span class="s">' + esc(i.s) + '</span></div>'
+    + '<button class="tickwrap" data-act="tick" data-arg="' + s.id + '" aria-label="' + (dn ? 'Mark not done' : 'Mark done') + '"><span class="tick">' + (dn ? tickSvg : '') + '</span></button></div>';
+};
+const renderWeek = () => {
+  const w = S.week, p = S.profile, dl = w.kind === 'deload', list = tpl();
+  const done = list.filter(s => w.done[s.id]).length, planned = runMinutesPlanned();
+  let h = '';
+  const sinceTest = w.no - (p.testWeek || 1);
+  if (toISO(mondayOf(new Date())) > w.start && w.start) h += '<div class="banner">A new calendar week has started. Finish week ' + w.no + ' when you are ready to move on.<button data-act="checkin">Finish week ' + w.no + '</button></div>';
+  else if (hasPaces() && sinceTest >= 8 && !dl) h += '<div class="banner">It has been ' + sinceTest + ' weeks since you set your 5K. Run a parkrun and update it so every pace matches your fitness now.<button data-act="retest">Update my 5K</button></div>';
+  h += '<div class="weekhead"><span class="weekno">Week ' + w.no + '</span><span class="phase ' + (dl ? 'deload' : 'build') + '">' + (dl ? 'Lighter week' : 'Build week ' + w.pos + ' of ' + p.buildWeeks) + '</span></div>';
+  h += '<div class="cycle" aria-hidden="true">';
+  for (let i = 1; i <= p.buildWeeks; i++) h += '<span class="pill ' + (dl || i < w.pos ? 'done' : i === w.pos ? 'now' : '') + '"></span>';
+  h += '<span class="pill dl ' + (dl ? 'now' : '') + '"></span></div>';
+  const left = p.buildWeeks - w.pos;
+  h += '<p class="cyclenote">' + (dl ? 'Same sessions, less of them. Building again next week.' : left <= 0 ? 'A lighter week comes next.' : left + (left === 1 ? ' more build week' : ' more build weeks') + ' before a lighter one.') + '</p>';
+  h += '<div class="stats"><div class="stat"><b>' + done + ' of ' + list.length + '</b><span>sessions done</span></div><div class="stat"><b>' + (planned ? fmtHM(planned) : 'No runs') + '</b><span>' + (planned ? 'of running planned' : 'this week') + '</span></div></div>';
+  if (w.no === 1 && !done) h += '<p class="hint">Tap a session for the detail. Tick it when it is done. Drag the handle to another day, or tap a rest day to add something.</p>';
+  const today = todayKey();
+  DAYS.forEach(d => {
+    const ss = list.filter(s => s.day === d), both = ss.some(s => s.type !== 'strength') && ss.some(s => s.type === 'strength');
+    h += '<div class="day' + (d === today ? ' today' : '') + '" data-day="' + d + '"><div class="dlabel">' + DAY3[d] + (d === today ? '<i class="today-dot"></i>' : '') + '</div><div class="stack">'
+      + (ss.length ? ss.map(card).join('') + (both ? '<div class="dnote">Run first, lift later in the day if you can.</div>' : '') : '<button class="rest" data-act="add" data-arg="' + d + '">Rest<span>Tap to add a session</span></button>')
+      + '</div></div>';
+  });
+  h += '<button class="btn finish ' + (done === list.length && list.length ? 'ok' : '') + '" data-act="checkin">Finish week ' + w.no + '</button>';
+  if (!dl) h += '<button class="linkbtn" data-act="lighter">Run down? Switch to a lighter week</button>';
+  return h;
+};
+
+/* ============ paces tab ============ */
+const renderPaces = () => {
+  const pc = P(), p = S.profile;
+  let h = '<div class="sec-title">Your paces</div>';
+  if (!pc) {
+    h += '<p class="hint">No 5K time set, so every run is by effort. Add a recent 5K or parkrun time and the app works out paces for you.</p>';
+    h += '<button class="btn sm" data-act="retest">Add a 5K time</button>';
+  } else {
+    const rep = (sec, d) => fmtTime(sec*d/1000);
+    h += '<p class="hint">Worked out from a ' + fmtTime(p.fiveK) + ' 5K (fitness score ' + pc.vd.toFixed(1) + '). Retest about every 8 weeks, or when top-level sessions feel comfortable. A parkrun is perfect.</p>';
+    h += '<button class="btn sm" data-act="retest">Update my 5K time</button>';
+    h += '<div class="cards">'
+      + '<div class="pc" style="--c:var(--easy)"><div class="n">Easy ceiling</div><div class="v">' + fmtPace(pc.easy) + '<small>/km</small></div><div class="d">Slower is fine. Talk in full sentences.</div></div>'
+      + '<div class="pc" style="--c:var(--quality)"><div class="n">Threshold</div><div class="v">' + fmtPace(pc.thr) + '<small>/km</small></div><div class="d">Comfortably hard, a few words at a time.</div></div>'
+      + '<div class="pc" style="--c:var(--gold)"><div class="n">VO2max reps</div><div class="v">' + fmtPace(pc.i) + '<small>/km</small></div><div class="d">Hard but repeatable. Just quicker than 5K pace.</div></div>'
+      + '<div class="pc" style="--c:var(--warn)"><div class="n">Fast reps</div><div class="v">' + fmtPace(pc.r) + '<small>/km</small></div><div class="d">Quick and relaxed, with full recovery.</div></div></div>';
+    h += '<table class="tt"><tr><th>Rep times</th><th>400 m</th><th>800 m</th><th>1 km</th></tr>'
+      + '<tr><td>Threshold</td><td>' + rep(pc.thr, 400) + '</td><td>' + rep(pc.thr, 800) + '</td><td>' + rep(pc.thr, 1000) + '</td></tr>'
+      + '<tr><td>VO2max</td><td>' + rep(pc.i, 400) + '</td><td>' + rep(pc.i, 800) + '</td><td>' + rep(pc.i, 1000) + '</td></tr>'
+      + '<tr><td>Fast reps</td><td>' + rep(pc.r, 400) + '</td><td>' + rep(pc.r, 800) + '</td><td>' + rep(pc.r, 1000) + '</td></tr></table>';
+  }
+  h += '<div class="sec-title sub">Effort guide</div><p class="hint">No watch needed. Use the talk test and this scale. If a run is drifting into "steady", slow down: that middle gear adds fatigue without the benefit.</p>';
+  h += '<table class="tt"><tr><th>Effort</th><th>Feels like</th><th>Used for</th></tr>'
+    + '<tr><td>Easy</td><td>Full sentences, could go for ages</td><td>Easy and long runs</td></tr>'
+    + '<tr><td>Steady</td><td>Short sentences</td><td>Progression runs only</td></tr>'
+    + '<tr><td>Threshold</td><td>A few words at a time</td><td>Tempo, cruise intervals</td></tr>'
+    + '<tr><td>Hard</td><td>One word, controlled</td><td>Intervals, hill repeats</td></tr>'
+    + '<tr><td>Fast</td><td>Relaxed sprint, never flat out</td><td>Strides, 400s, hill sprints</td></tr></table>';
+  h += '<div class="sec-title sub">Lifting effort</div><p class="hint">Stop most sets with 1 to 3 reps left in the tank. When you hit the top of the rep range on every set, the app adds weight next time. ' + (maintain() ? 'Running is your focus right now, so lifting is set to maintain: fewer sets, same weights, no pressure to add load.' : 'Lifting progresses alongside your running.') + '</p>';
+  return h;
+};
+
+/* ============ progress tab ============ */
+const renderProgress = () => {
+  const hist = S.history, w = S.week;
+  let h = '<div class="sec-title">Progress</div>';
+  const startLong = vol(0, false).L, nowLong = vol(w.kind === 'deload' ? w.resume : w.level, false).L;
+  h += '<div class="stats"><div class="stat"><b>' + hist.length + '</b><span>weeks finished</span></div><div class="stat"><b>' + nowLong + ' min</b><span>long run now, started at ' + startLong + '</span></div></div>';
+  if (!hist.length) h += '<div class="empty">Finish your first week and your progress shows up here: weekly running, session levels and lifts.</div>';
+  else {
+    const last = hist.slice(-12), max = Math.max.apply(null, last.map(x => x.runMin).concat([1]));
+    h += '<div class="sec-title sub">Running per week</div><div class="bars">' + last.map(x => '<div class="bar"><i class="' + (x.kind === 'deload' ? 'dl' : '') + '" style="height:' + Math.max(3, Math.round(x.runMin/max*78)) + 'px" title="' + x.runMin + ' min"></i><span>' + x.no + '</span></div>').join('') + '</div>';
+    h += '<p class="hint">Minutes of running completed each week. Green bars are lighter weeks.</p>';
+    h += '<div class="sec-title sub">Weeks</div><div class="list">' + hist.slice(-8).reverse().map(x => '<div class="li"><span>Week ' + x.no + (x.kind === 'deload' ? ', lighter' : '') + '</span><span>' + x.done + ' of ' + x.planned + ' done, felt ' + ({easy:'easy', right:'about right', tough:'too much'}[x.feel] || x.feel) + '</span></div>').join('') + '</div>';
+  }
+  const qs = Q.filter(q => S.qLast[q.id] !== undefined);
+  h += '<div class="sec-title sub">Quality sessions</div><div class="list">';
+  h += qs.length ? qs.map(q => { const lv = Math.min(S.levels[q.id] || 0, q.lv.length - 1); return '<div class="li"><span>' + q.name + '</span><span>Level ' + (lv + 1) + ' of ' + q.lv.length + '<span class="dots">' + q.lv.map((_, i) => '<i class="' + (i < lv ? 'on' : '') + '"></i>').join('') + '</span></span></div>'; }).join('') : '<div class="li"><span>Nothing completed yet</span><span></span></div>';
+  h += '</div>';
+  const ls = Object.keys(S.lifts).filter(id => EXMAP[id]);
+  h += '<div class="sec-title sub">Lifts</div><div class="list">';
+  h += ls.length ? ls.map(id => { const L = S.lifts[id], e = EXMAP[id], d = L.weight - L.first, best = L.last ? Math.round(e1rm(L.last.w, Math.max.apply(null, L.last.reps))) : null; return '<div class="li"><span>' + e.n + '</span><span>' + L.weight + ' ' + (e.unit || 'kg') + (d > 0 ? ', up ' + (Math.round(d*10)/10) : '') + (best && !e.unit ? ', est. max ' + best + ' kg' : '') + '</span></div>'; }).join('') : '<div class="li"><span>Nothing logged yet</span><span></span></div>';
+  h += '</div>';
+  h += '<button class="btn sm" data-act="backup" style="margin-top:18px">Back up or restore</button>';
+  return h;
+};
+
+const render = () => {
+  $('view').innerHTML = S.tab === 'paces' ? renderPaces() : S.tab === 'progress' ? renderProgress() : renderWeek();
+  document.querySelectorAll('.tabs button').forEach(b => { if (b.getAttribute('data-arg') === S.tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+};
+
+/* ============ drag and drop (pointer events on the grip) ============ */
+let drag = null;
+const dayAt = (x, y) => { const el = document.elementFromPoint(x, y); return el ? el.closest('.day') : null; };
+document.addEventListener('pointerdown', e => {
+  const g = e.target.closest ? e.target.closest('[data-drag]') : null;
+  if (!g) return;
+  const cardEl = g.closest('.sc'); if (!cardEl) return;
+  e.preventDefault();
+  const r = cardEl.getBoundingClientRect(), ghost = cardEl.cloneNode(true);
+  ghost.className = 'sc ghost'; ghost.style.width = r.width + 'px'; ghost.style.left = r.left + 'px'; ghost.style.top = r.top + 'px';
+  document.body.appendChild(ghost);
+  drag = {id:g.getAttribute('data-drag'), ghost:ghost, dx:e.clientX - r.left, dy:e.clientY - r.top, over:null, from:cardEl};
+  cardEl.classList.add('lifting');
+  try { g.setPointerCapture(e.pointerId); } catch (x) {}
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  drag.ghost.style.left = (e.clientX - drag.dx) + 'px'; drag.ghost.style.top = (e.clientY - drag.dy) + 'px';
+  const d = dayAt(e.clientX, e.clientY);
+  if (drag.over && drag.over !== d) drag.over.classList.remove('over');
+  if (d) d.classList.add('over');
+  drag.over = d;
+});
+const endDrag = e => {
+  if (!drag) return;
+  const d = drag.over ? drag.over.getAttribute('data-day') : null;
+  drag.ghost.remove(); if (drag.over) drag.over.classList.remove('over'); drag.from.classList.remove('lifting');
+  const id = drag.id; drag = null;
+  const s = slotById(id);
+  if (d && s && s.day !== d) { s.day = d; save(); render(); toast('Moved to ' + DAYLONG[d]); }
+};
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
+
+/* ============ sheets: runs ============ */
+const openRun = s => {
+  const i = sessInfo(s), dn = !!S.week.done[s.id], pc = P(), long = s.type === 'long';
+  let h = head(i.t, long ? 'Easy pace, the longest run of your week' : 'Easy pace');
+  h += '<div class="bigmin">' + i.min + '<small>min</small></div>';
+  h += '<div class="block"><h4>How to run it</h4><p>Talk test: full sentences the whole way. If you cannot, slow down.</p>' + (pc ? '<p>Pace ceiling: slower than <b>' + fmtPace(pc.easy) + '/km</b>. It is a ceiling, not a target. Slower is fine, faster is the mistake.</p><p>Roughly ' + (i.min*60/(pc.easy + 35)).toFixed(1) + ' km at a typical easy pace. Run by time, not distance.</p>' : '<p>Run by time, not distance. Easy should feel almost too slow.</p>') + '</div>';
+  if (s.strides) h += '<div class="block"><h4>Strides</h4><p>Finish with 6 x 20 s strides: smooth and fast, never a sprint. Walk back between each. They keep your legs sharp at almost no cost.</p></div>';
+  if (long) h += '<div class="block"><h4>Fuel</h4><p>Over 75 minutes, take water and some carbohydrate with you.' + (S.profile.niggle === 'itb' ? ' Keep the route flat where you can; downhills are what upset an IT band.' : '') + '</p></div>';
+  h += moveRow(s);
+  if (s.type === 'easy') h += '<button class="btn sm" data-act="retype" data-arg="' + s.id + '|quality">Make this a quality run instead</button>';
+  h += '<button class="btn sm warn" data-act="remove" data-arg="' + s.id + '">Remove from my week</button>';
+  h += '<button class="btn ' + (dn ? '' : 'ok') + '" data-act="tick" data-arg="' + s.id + '" data-close="1">' + (dn ? 'Mark not done' : 'Mark done') + '</button>';
+  openSheet(h);
+};
+
+/* ============ sheets: quality ============ */
+const lastTxt = w => { if (w === undefined) return 'New'; const n = S.week.no - w; return n <= 0 ? 'Done this week' : n === 1 ? 'Last week' : n + ' weeks ago'; };
+const openQPicker = s => {
+  const dl = S.week.kind === 'deload', sug = suggestQ(), pool = qPool(), ng = S.profile.niggle;
+  let h = head('Choose your quality session', dl ? 'Lighter week: shorter versions, same sharpness' : 'Rotate through the families. Variety is part of the plan.');
+  if (beginner()) h += '<p class="hint">Starting gently: intervals and hill sessions unlock once your longest run passes 30 minutes.</p>';
+  Object.keys(FAM).forEach(fk => {
+    const qs = pool.filter(q => q.fam === fk); if (!qs.length) return;
+    h += '<div class="grp">' + FAM[fk].name + '<small>' + FAM[fk].blurb + '</small></div>';
+    qs.forEach(q => {
+      const b = buildQ(q, S.levels[q.id] || 0, dl), warn = (q.caution || []).indexOf(ng) >= 0;
+      h += '<div role="button" tabindex="0" class="opt" data-act="pickq" data-arg="' + s.id + '|' + q.id + '"><span class="t"><span class="tag">' + (q.id === sug ? 'Suggested' : warn ? 'Go careful' : lastTxt(S.qLast[q.id])) + '</span>' + esc(q.name) + '</span><span class="s">' + esc(b.summary) + '</span></div>';
+    });
+  });
+  openSheet(h);
+};
+const openQ = s => {
+  const w = S.week, q = qById(w.picks[s.id]);
+  if (!q) return openQPicker(s);
+  const dl = w.kind === 'deload', dn = !!w.done[s.id], lvl = dn && w.bump[s.id] ? w.bump[s.id].from : (S.levels[q.id] || 0), b = buildQ(q, lvl, dl);
+  let h = head(q.name, FAM[q.fam].name + (dl ? ', lighter week version' : '') + (w.auto[s.id] ? ', suggested for this week' : ''));
+  if ((q.caution || []).indexOf(S.profile.niggle) >= 0) h += '<div class="block warnb"><p>' + (S.profile.niggle === 'itb' ? 'Hills can wind up an IT band, mostly on the way down. Jog the descents very gently or walk them, and swap this out if your knee complains.' : 'Fast reps and hills load the calf and Achilles hard. Keep the warm-up long and stop at the first sign of tightness.') + '</p></div>';
+  h += '<div class="block"><h4>Warm-up</h4><p>' + b.warm + '</p>' + (b.prep ? '<p>' + b.prep + '</p>' : '') + '</div>';
+  h += '<div class="block"><h4>Main set</h4>' + b.lines.map((l, i) => i === 0 ? '<p class="big">' + esc(l) + '</p>' : '<p>' + esc(l) + '</p>').join('') + '</div>';
+  h += '<div class="block"><h4>Cool-down</h4><p>' + b.cool + '</p></div>';
+  h += '<div class="block"><h4>How it should feel</h4><p>' + esc(q.tip) + '</p></div>';
+  h += '<p class="hint">' + (dl ? 'Lighter week, so no level change.' : b.top ? 'Top level for this session. When it feels comfortable, update your 5K on the Paces tab and every pace resets.' : 'Level ' + (b.level + 1) + ' of ' + q.lv.length + '. Tick it done and it steps up next time you choose it.') + '</p>';
+  if (!dn) h += '<button class="btn sm" data-act="changeq" data-arg="' + s.id + '">Choose a different session</button>';
+  h += moveRow(s);
+  h += '<button class="btn sm" data-act="retype" data-arg="' + s.id + '|easy">Make this an easy run instead</button>';
+  h += '<button class="btn sm warn" data-act="remove" data-arg="' + s.id + '">Remove from my week</button>';
+  h += '<button class="btn ' + (dn ? '' : 'ok') + '" data-act="tick" data-arg="' + s.id + '" data-close="1">' + (dn ? 'Mark not done' : 'Mark done') + '</button>';
+  openSheet(h);
+};
+
+/* ============ sheets: strength ============ */
+let curS = null;
+const dayHard = d => tpl().some(x => x.day === d && (x.type === 'quality' || x.type === 'long'));
+const openSPicker = s => {
+  const nxt = dayHard(nextDay(s.day)), cur = s.key;
+  let h = head('Choose a strength session', DAYLONG[s.day] + (nxt ? ', the day before a hard run' : ''));
+  if (nxt) h += '<p class="hint">Upper-body or hips-and-core sessions are the best fit before a hard run: your legs stay fresh for it.</p>';
+  Object.keys(SS).forEach(k => {
+    const x = SS[k], tag = k === cur ? 'Current' : (nxt && x.lower ? 'Heavy legs' : (nxt && !x.lower ? 'Good fit' : ''));
+    h += '<div role="button" tabindex="0" class="opt" style="--c:var(--strength)" data-act="picks" data-arg="' + s.id + '|' + k + '"><span class="t"><span class="tag">' + tag + '</span>' + x.name + '</span><span class="s">' + x.sub + ', about ' + x.min + ' min</span></div>';
+  });
+  openSheet(h);
+};
+const openS = s => {
+  if (!s.key || !SS[s.key]) return openSPicker(s);
+  curS = s.id;
+  const w = S.week, ss = SS[s.key], dl = w.kind === 'deload', dn = !!w.done[s.id], lg = w.logs[s.id] || {}, exs = sessionEx(s.key);
+  const sameDayRun = tpl().some(x => x.day === s.day && x.type !== 'strength');
+  let h = head(ss.name, ss.sub + ', about ' + ss.min + ' min');
+  if (dl) h += '<div class="block"><h4>Lighter week</h4><p>Half the sets, same weights. Keep it crisp.</p></div>';
+  else if (maintain()) h += '<p class="hint">Running focus: sets trimmed to maintain strength, not chase it.</p>';
+  if (sameDayRun) h += '<div class="block"><h4>Same day as a run</h4><p>Run first, lift later if you can. Lift first only if the run is a very easy one.</p></div>';
+  h += '<p class="hint">Warm up with one or two lighter sets of the first exercise. Stop each working set with 1 to 3 reps left.</p>';
+  exs.forEach((e, i) => {
+    const n = setsFor(e, dl), L = S.lifts[e.id], unit = e.unit || 'kg';
+    h += '<div class="ex"><div class="exh"><div><div class="nm">' + e.n + '</div><div class="nt">' + e.nt + '</div></div><span role="button" tabindex="0" class="swap" data-act="swap" data-arg="' + s.key + '|' + i + '" aria-label="Swap ' + esc(e.n) + '">Swap</span></div>';
+    if (e.tr) {
+      const lw = lg[e.id] && lg[e.id].w !== undefined && lg[e.id].w !== '' ? lg[e.id].w : (L && L.weight !== undefined ? L.weight : '');
+      h += '<div class="tg">Target: ' + n + ' x ' + e.lo + ' to ' + e.hi + (L ? ' at ' + L.weight + ' ' + unit : '') + '</div>';
+      if (L && L.last) h += '<div class="last">Last time: ' + L.last.w + ' ' + unit + ' x ' + L.last.reps.join(', ') + '</div>';
+      h += '<div class="logrow"><label>' + (unit === 'm' ? 'Weight in kg, then metres for each set' : 'Weight, then reps for each set') + '</label><input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg" data-ex="' + e.id + '" data-k="w" value="' + esc(lw) + '" aria-label="' + esc(e.n) + ' weight in kilograms">';
+      for (let k = 0; k < n; k++) h += '<input type="number" inputmode="numeric" min="0" data-ex="' + e.id + '" data-k="r" data-i="' + k + '" value="' + esc((lg[e.id] && lg[e.id].r && lg[e.id].r[k]) || '') + '" placeholder="' + e.lo + '-' + e.hi + '" aria-label="' + esc(e.n) + ' set ' + (k + 1) + '">';
+      h += '</div>';
+    } else h += '<div class="tg">' + n + ' x ' + e.per + '</div>';
+    h += '</div>';
+  });
+  h += '<button class="btn sm" data-act="schange" data-arg="' + s.id + '">Choose a different session</button>';
+  h += moveRow(s);
+  h += '<button class="btn sm warn" data-act="remove" data-arg="' + s.id + '">Remove from my week</button>';
+  h += '<button class="btn ' + (dn ? '' : 'ok') + '" data-act="tick" data-arg="' + s.id + '" data-close="1">' + (dn ? 'Mark not done' : 'Mark done and log') + '</button>';
+  openSheet(h);
+};
+const openSwap = (key, i) => {
+  const pat = SS[key].slots[i], cur = resolveSlot(key, i), c = candidates(pat);
+  let h = head('Swap ' + (cur ? cur.n : PATNAME[pat]), PATNAME[pat] + ' alternatives for your equipment');
+  c.forEach(e => { h += '<div role="button" tabindex="0" class="opt" style="--c:var(--strength)" data-act="doswap" data-arg="' + key + '|' + i + '|' + e.id + '"><span class="t"><span class="tag">' + (cur && cur.id === e.id ? 'Current' : (S.lifts[e.id] ? 'Logged before' : '')) + '</span>' + e.n + '</span><span class="s">' + e.nt + '</span></div>'; });
+  h += '<p class="hint">Alternatives keep the same movement pattern, so the session still does its job. Pick what your joints and your gym allow, then stick with it so progress is measurable.</p>';
+  openSheet(h);
+};
+
+/* ============ sheets: add, check-in, lighter, retest, backup ============ */
+const openAdd = d => {
+  const hasLong = S.template.some(s => s.type === 'long');
+  let h = head('Add to ' + DAYLONG[d], 'It stays in your week until you remove it.');
+  [['easy','Easy run','Run by time, easy effort'], ['quality','Quality run','Pick from the session library'], ['long','Long run','One per week', hasLong], ['strength','Strength session','Pick from the lifting sessions']].forEach(x => {
+    if (x[3]) return;
+    h += '<div role="button" tabindex="0" class="opt" style="--c:' + COL[x[0]] + '" data-act="doadd" data-arg="' + d + '|' + x[0] + '"><span class="t">' + x[1] + '</span><span class="s">' + x[2] + '</span></div>';
+  });
+  openSheet(h);
+};
+let ci = null;
+const openCheckin = () => {
+  const w = S.week, list = tpl(), done = list.filter(s => w.done[s.id]).length, pct = list.length ? done/list.length : 1;
+  ci = ci || {feel:'right', repeat:pct < 0.6 && w.kind === 'build'};
+  const pv = nextWeekPreview(ci.feel, ci.repeat);
+  let h = head('Finish week ' + w.no, done + ' of ' + list.length + ' sessions done');
+  h += '<div class="field"><label>How did the week feel?</label>' + seg('feel', ['easy','right','tough'], ci.feel, ['Easy', 'About right', 'Too much']) + '</div>';
+  if (pct < 0.6 && w.kind === 'build') h += '<div class="field"><label>Under 60 percent of the week done. What next?</label>' + seg('repeat', ['1','0'], ci.repeat ? '1' : '0', ['Repeat this level', 'Move on anyway']) + '<p class="hint">Repeating is not a penalty. A missed session is gone, nothing stacks up.</p></div>';
+  h += '<div class="block next"><h4>Next up</h4><p class="big">' + pv.label + '</p><p>' + (pv.kind === 'deload' ? 'About 30 percent less running and half the sets in the gym.' : 'Long run ' + vol(pv.level, false).L + ' min, easy runs around ' + vol(pv.level, false).E1 + ' min.') + '</p></div>';
+  h += '<button class="btn pri" data-act="finishweek">Start week ' + (w.no + 1) + '</button>';
+  openSheet(h);
+};
+const openLighter = () => {
+  let h = head('Switch to a lighter week?', 'Use this when you feel run down.');
+  h += '<div class="block"><p>Running drops by about 30 percent for the rest of this week, lifting goes to half the sets, and you go back to building next week at the same level. Nothing you have done is lost.</p></div>';
+  h += '<button class="btn pri" data-act="lighterok">Switch to a lighter week</button><button class="btn" data-act="close">Keep this week</button>';
+  openSheet(h);
+};
+const openRetest = () => {
+  let h = head(hasPaces() ? 'Update your 5K' : 'Add a 5K time', 'Every pace comes from this time.');
+  h += '<div class="field"><label for="fnew">5K time (mm:ss)</label><input id="fnew" type="text" inputmode="numeric" placeholder="24:30" value="' + (hasPaces() ? fmtTime(S.profile.fiveK) : '') + '" autocomplete="off"></div><div id="rerr" class="err" role="alert"></div><button class="btn pri" data-act="saveretest">Save</button>';
+  openSheet(h);
+};
+const openBackup = () => {
+  let h = head('Back up or restore', 'Progress lives in this browser. Copy the code to keep it safe or move phones.');
+  h += '<div class="field"><label for="bk">Your backup code</label><textarea id="bk" rows="4" readonly>' + esc(btoa(unescape(encodeURIComponent(JSON.stringify(S))))) + '</textarea></div><button class="btn sm" data-act="copybk">Copy backup code</button>';
+  h += '<div class="field"><label for="rs">Restore from a code</label><textarea id="rs" rows="3" placeholder="Paste a backup code"></textarea></div><div id="rserr" class="err" role="alert"></div><button class="btn sm" data-act="restore">Restore</button>';
+  openSheet(h);
+};
+
+/* ============ setup questionnaire ============ */
+let qz = null;
+const QSTEPS = ['focus','running','strength','body','cycle'];
+const openSetup = first => {
+  const p = S.profile;
+  qz = qz || {step:0, d:{focus:p.focus, runDays:p.runDays, strengthDays:p.strengthDays, fiveK:p.fiveK ? fmtTime(p.fiveK) : '', longMin:p.longMin, longCap:p.longCap, buildWeeks:p.buildWeeks, equipment:p.equipment, niggle:p.niggle, freeDay:p.freeDay}, first:first};
+  renderSetup();
+};
+const renderSetup = () => {
+  const d = qz.d, st = QSTEPS[qz.step], n = QSTEPS.length;
+  let h = '<div class="steps" aria-hidden="true">' + QSTEPS.map((_, i) => '<span class="' + (i < qz.step ? 'done' : i === qz.step ? 'now' : '') + '"></span>').join('') + '</div>';
+  if (st === 'focus') {
+    h += head(qz.first ? 'Let\u2019s build your week' : 'Your focus', 'Five quick questions. Change any of them later in settings.');
+    h += '<div class="field"><label>What matters most right now?</label>' + seg('focus', ['run','both','strength'], d.focus, ['Running', 'Both', 'Strength']) + '<p class="hint">Running focus keeps lifting at maintenance so your legs are fresh for runs. Strength focus progresses lifts and builds the long run more gently. Both does both, a little slower each.</p></div>';
+  } else if (st === 'running') {
+    h += head('Running', 'The week fills itself in from these.');
+    h += '<div class="field"><label>Running days per week</label>' + seg('runDays', [0,1,2,3,4,5,6,7], d.runDays) + '<p class="hint">3 gives you easy, quality and long. 4 adds a second easy run, and so on. At 7 you get two quality sessions.</p></div>';
+    h += '<div class="field"><label for="f5k">Recent 5K time (optional)</label><input id="f5k" type="text" inputmode="numeric" placeholder="24:30" value="' + esc(d.fiveK) + '" autocomplete="off"><p class="hint">A parkrun or hard solo effort. Sets every pace. Leave it blank and runs go by effort instead.</p></div>';
+    h += '<div class="field"><label for="flong">Longest easy run you can do comfortably now, in minutes</label><input id="flong" type="number" inputmode="numeric" min="0" value="' + esc(d.longMin) + '"></div>';
+    h += '<div class="field"><label for="fcap">Long run ceiling, in minutes</label><input id="fcap" type="number" inputmode="numeric" min="0" value="' + esc(d.longCap) + '"><p class="hint">The long run grows until it reaches this. Raise it whenever you want more.</p></div>';
+  } else if (st === 'strength') {
+    h += head('Strength', 'Sessions are built from movement patterns, so they fit your kit.');
+    h += '<div class="field"><label>Strength days per week</label>' + seg('strengthDays', [0,1,2,3,4,5,6,7], d.strengthDays) + '<p class="hint">1 to 3 gives full-body sessions. 4 to 5 splits upper and lower. 6 to 7 adds push, pull and legs days, plus hips and core.</p></div>';
+    h += '<div class="field"><label>Equipment</label>' + seg('equipment', ['gym','db','bw'], d.equipment, ['Full gym', 'Dumbbells and bands', 'Bodyweight']) + '</div>';
+  } else if (st === 'body') {
+    h += head('Your body', 'This shapes the hip and calf work and flags sessions to go careful on.');
+    h += '<div class="field"><label>Anything to work around?</label>' + seg('niggle', ['none','itb','calf'], d.niggle, ['Nothing', 'Knees or IT band', 'Calves or Achilles']) + '<p class="hint">Strength work for the hips and core is the best-evidenced way to cut running injuries. For pain that is sharp, persistent or getting worse, see a physio rather than training through it.</p></div>';
+  } else {
+    h += head('Your cycle', 'How the weeks repeat.');
+    h += '<div class="field"><label>Build weeks before a lighter week</label>' + seg('buildWeeks', [2,3,4,5], d.buildWeeks) + '<p class="hint">3 means three weeks building, then one lighter week, on repeat. You can call a lighter week early any time.</p></div>';
+    h += '<div class="field"><label>Day you most want free</label>' + seg('freeDay', DAYS, d.freeDay, DAYS.map(x => DAY3[x])) + '<p class="hint">Kept clear unless you train every day.</p></div>';
+  }
+  h += '<div id="seterr" class="err" role="alert"></div>';
+  h += '<div class="row">' + (qz.step > 0 ? '<button class="btn half" data-act="qback">Back</button>' : (qz.first ? '' : '<button class="btn half" data-act="close">Cancel</button>')) + '<button class="btn half pri" data-act="qnext">' + (qz.step === n - 1 ? (qz.first ? 'Build my week' : 'Save') : 'Next') + '</button></div>';
+  openSheet(h);
+};
+const readSetupInputs = () => {
+  const d = qz.d, st = QSTEPS[qz.step];
+  if (st === 'running') {
+    d.fiveK = $('f5k').value.trim(); d.longMin = +$('flong').value; d.longCap = +$('fcap').value;
+    if (d.fiveK && (parseTime(d.fiveK) === null || parseTime(d.fiveK) < 720 || parseTime(d.fiveK) > 3600)) return 'Enter the 5K as minutes and seconds, like 24:30, or leave it blank.';
+    if (d.runDays > 0 && !(d.longMin >= 15 && d.longMin <= 210)) return 'Longest easy run should be between 15 and 210 minutes.';
+    if (d.runDays > 0 && !(d.longCap >= 30 && d.longCap <= 210)) return 'Long run ceiling should be between 30 and 210 minutes (that is the three and a half hour cap).';
+  }
+  if (st === 'strength' && d.runDays === 0 && d.strengthDays === 0) return 'Pick at least one running or strength day.';
+  return null;
+};
+const finishSetup = () => {
+  const d = qz.d, p = S.profile;
+  const relayout = !p.setup || d.runDays !== p.runDays || d.strengthDays !== p.strengthDays || d.freeDay !== p.freeDay;
+  const sec = d.fiveK ? parseTime(d.fiveK) : null;
+  if (sec !== p.fiveK) p.testWeek = S.week.no;
+  if (!p.setup || d.longMin !== p.longMin) p.startedLong = d.longMin;
+  p.focus = d.focus; p.runDays = d.runDays; p.strengthDays = d.strengthDays; p.fiveK = sec; p.longMin = d.longMin; p.longCap = Math.max(d.longCap, d.longMin);
+  p.buildWeeks = d.buildWeeks; p.equipment = d.equipment; p.niggle = d.niggle; p.freeDay = d.freeDay;
+  const wasSetup = p.setup; p.setup = true;
+  if (relayout) { S.template = genTemplate(p); S.week.done = {}; S.week.picks = {}; S.week.auto = {}; S.week.logs = {}; S.week.bump = {}; S.week.snap = {}; }
+  if (!S.week.start) S.week.start = toISO(mondayOf(new Date()));
+  if (S.week.kind === 'build' && S.week.pos > p.buildWeeks) S.week.pos = p.buildWeeks;
+  autoPick();
+  qz = null; S.tab = 'week'; save(); closeSheet(); render(); toTop();
+  toast(wasSetup ? (relayout ? 'Week rebuilt' : 'Saved') : 'Your week is ready');
+};
+
+/* ============ completion and progression ============ */
+const tickSlot = id => {
+  const w = S.week, s = slotById(id); if (!s) return;
+  if (w.done[id]) {
+    delete w.done[id];
+    if (w.bump[id]) { S.levels[w.bump[id].q] = w.bump[id].from; delete w.bump[id]; }
+    if (w.snap[id]) { S.lifts = JSON.parse(w.snap[id]); delete w.snap[id]; }
+    save(); render(); return;
+  }
+  w.done[id] = true;
+  if (s.type === 'quality') {
+    const q = qById(w.picks[id]);
+    if (q) { if (w.kind === 'build') { const cur = S.levels[q.id] || 0; w.bump[id] = {q:q.id, from:cur}; S.levels[q.id] = Math.min(q.lv.length - 1, cur + 1); } S.qLast[q.id] = w.no; S.qLast.__fam = q.fam; }
+    toast(w.kind === 'build' && q ? 'Done. It steps up next time' : 'Done');
+  } else if (s.type === 'strength' && s.key) {
+    w.snap[id] = JSON.stringify(S.lifts);
+    const dl = w.kind === 'deload', lg = w.logs[id] || {};
+    let logged = 0;
+    sessionEx(s.key).forEach(e => {
+      if (!e.tr || !lg[e.id]) return;
+      const wt = parseFloat(lg[e.id].w), reps = (lg[e.id].r || []).map(x => parseInt(x, 10)).filter(x => x > 0);
+      if (isNaN(wt) || wt < 0 || !reps.length) return;
+      logged++;
+      const n = setsFor(e, dl), L = S.lifts[e.id] || {first:wt, history:[]}, entry = {d:toISO(new Date()), w:wt, reps:reps};
+      L.last = entry; L.history.push(entry); if (L.history.length > 40) L.history.shift();
+      const hit = reps.length >= n && reps.every(r => r >= e.hi);
+      L.weight = (dl || maintain()) ? (L.weight !== undefined ? L.weight : wt) : (hit ? Math.round((wt + e.inc)*2)/2 : wt);
+      S.lifts[e.id] = L;
+    });
+    toast(logged ? 'Done. ' + logged + (logged === 1 ? ' lift logged' : ' lifts logged') : 'Done');
+  } else toast('Done');
+  save(); render();
+};
+const finishWeek = () => {
+  const w = S.week, list = tpl(), done = list.filter(s => w.done[s.id]).length, pct = list.length ? done/list.length : 1;
+  const c = ci || {feel:'right', repeat:pct < 0.6 && w.kind === 'build'}, pv = nextWeekPreview(c.feel, c.repeat);
+  let runMin = 0; list.forEach(s => { if (s.type !== 'strength' && w.done[s.id]) runMin += sessInfo(s).min; });
+  S.history.push({no:w.no, kind:w.kind, level:w.level, planned:list.length, done:done, feel:c.feel, runMin:runMin, longMin:vol(w.level, w.kind === 'deload').L, start:w.start, ended:toISO(new Date())});
+  S.week = {no:w.no + 1, kind:pv.kind, pos:pv.pos, level:pv.level, resume:pv.resume, start:toISO(mondayOf(new Date())), done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}};
+  autoPick(); ci = null; S.tab = 'week';
+  save(); closeSheet(); render(); toTop(); toast('Week ' + w.no + ' done. Next: ' + pv.label);
+};
+
+/* ============ actions ============ */
+const act = {
+  tab: a => { S.tab = a; save(); render(); toTop(); },
+  settings: () => openSetup(!S.profile.setup),
+  close: () => closeSheet(),
+  qnext: () => { const err = readSetupInputs(); if (err) { $('seterr').textContent = err; return; } if (qz.step < QSTEPS.length - 1) { qz.step++; renderSetup(); } else finishSetup(); },
+  qback: () => { readSetupInputs(); qz.step--; renderSetup(); },
+  seg: (a, t) => {
+    const key = t.getAttribute('data-key'), val = isNaN(+a) || key === 'freeDay' ? a : +a;
+    t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t ? 'true' : 'false'));
+    if (qz) qz.d[key] = val;
+    if (ci && (key === 'feel' || key === 'repeat')) { if (key === 'feel') ci.feel = val; else ci.repeat = val === 1; openCheckin(); }
+  },
+  open: a => { const s = slotById(a); if (!s) return; if (s.type === 'quality') openQ(s); else if (s.type === 'strength') openS(s); else openRun(s); },
+  tick: (a, t) => { tickSlot(a); if (t.getAttribute('data-close')) closeSheet(); },
+  pickq: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; S.week.picks[x[0]] = x[1]; delete S.week.auto[x[0]]; save(); render(); openQ(s); },
+  changeq: a => { const s = slotById(a); if (s) openQPicker(s); },
+  picks: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; s.key = x[1]; save(); render(); closeSheet(); toast(SS[x[1]].name + ' on ' + DAYLONG[s.day]); },
+  schange: a => { const s = slotById(a); if (s) openSPicker(s); },
+  swap: a => { const x = a.split('|'); openSwap(x[0], +x[1]); },
+  doswap: a => { const x = a.split('|'); S.swaps[x[0]] = S.swaps[x[0]] || {}; S.swaps[x[0]][x[1]] = x[2]; save(); const s = curS ? slotById(curS) : null; if (s && s.key === x[0]) openS(s); else closeSheet(); toast('Swapped to ' + EXMAP[x[2]].n); },
+  move: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; s.day = x[1]; save(); closeSheet(); render(); toast('Moved to ' + DAYLONG[x[1]]); },
+  add: a => openAdd(a),
+  doadd: a => {
+    const x = a.split('|'), type = x[1], s = {id:uid(type === 'strength' ? 's' : 'r'), type:type, day:x[0], strides:false};
+    if (type === 'easy') s.role = 'E2';
+    S.template.push(s); autoPick(); save(); render(); closeSheet();
+    if (type === 'strength') openSPicker(s); else toast(TYPENAME[type] + ' added to ' + DAYLONG[x[0]]);
+  },
+  retype: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; s.type = x[1]; if (x[1] === 'easy') { s.role = s.role || 'E2'; delete S.week.picks[s.id]; delete S.week.auto[s.id]; } delete S.week.done[s.id]; autoPick(); save(); closeSheet(); render(); toast('Changed to ' + TYPENAME[x[1]].toLowerCase()); },
+  remove: (a, t) => { if (!t.getAttribute('data-sure')) { t.setAttribute('data-sure', '1'); t.textContent = 'Tap again to remove it'; return; } S.template = S.template.filter(s => s.id !== a); delete S.week.done[a]; delete S.week.picks[a]; save(); closeSheet(); render(); toast('Removed'); },
+  checkin: () => { ci = null; openCheckin(); },
+  finishweek: () => finishWeek(),
+  lighter: () => openLighter(),
+  lighterok: () => { const w = S.week; if (w.kind !== 'deload') { w.kind = 'deload'; w.resume = w.level; } closeSheet(); save(); render(); toast('Switched to a lighter week'); },
+  retest: () => openRetest(),
+  saveretest: () => {
+    const sec = parseTime($('fnew').value);
+    if (sec === null || sec < 720 || sec > 3600) { $('rerr').textContent = 'Enter the 5K as minutes and seconds, like 24:30.'; return; }
+    S.profile.fiveK = sec; S.profile.testWeek = S.week.no; save(); closeSheet(); render(); toast('Paces updated');
+  },
+  backup: () => openBackup(),
+  copybk: () => { const el = $('bk'); el.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(el.value).then(() => toast('Copied'), () => {}); else toast(ok ? 'Copied' : 'Select the code and copy it'); },
+  restore: () => {
+    try { const o = JSON.parse(decodeURIComponent(escape(atob($('rs').value.trim())))); if (!o || o.v !== 2 || !o.profile) throw new Error('bad'); S = merge(fresh(), o); save(); closeSheet(); render(); toast('Restored'); }
+    catch (e) { $('rserr').textContent = 'That code did not work. Paste the whole thing, with nothing added.'; }
+  }
+};
+document.addEventListener('click', e => {
+  const t = e.target.closest ? e.target.closest('[data-act]') : null;
+  if (!t) return;
+  const a = t.getAttribute('data-act');
+  if (act[a]) act[a](t.getAttribute('data-arg'), t, e);
+});
+document.addEventListener('input', e => {
+  const t = e.target, ex = t.getAttribute && t.getAttribute('data-ex');
+  if (!ex || !curS) return;
+  const lg = S.week.logs[curS] = S.week.logs[curS] || {}, o = lg[ex] = lg[ex] || {r:[]};
+  if (t.getAttribute('data-k') === 'w') o.w = t.value; else o.r[+t.getAttribute('data-i')] = t.value;
+  save();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSheet();
+  const t = e.target;
+  if ((e.key === 'Enter' || e.key === ' ') && t && t.getAttribute && t.getAttribute('role') === 'button' && t.getAttribute('data-act')) { e.preventDefault(); t.click(); }
+});
+ov.addEventListener('click', closeSheet);
+
+/* ============ boot ============ */
+if (S.profile.setup) { autoPick(); save(); }
+render();
+if (!S.profile.setup) openSetup(true);
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+
+})();
+</script>
+</body>
+</html>
