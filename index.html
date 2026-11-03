@@ -665,15 +665,16 @@ const nextWeekPreview = (feel, repeat) => {
   if (w.kind === 'deload') return {kind:'build', pos:1, level:w.resume, resume:w.resume, label:'Build week 1 of ' + p.buildWeeks};
   if (feel === 'tough') return {kind:'deload', pos:w.pos, level:w.level, resume:w.level, label:'Lighter week, then back to building'};
   if (repeat) return {kind:'build', pos:w.pos, level:w.level, resume:w.resume, label:'Build week ' + w.pos + ' of ' + p.buildWeeks + ' again, same level'};
-  const step = feel === 'easy' ? 2 : 1, lvl = w.level + step, pos = w.pos + 1;
+  const lvl = w.level + 1, pos = w.pos + 1; /* always one step: a long run never jumps more than about 10 percent */
   if (pos > p.buildWeeks) return {kind:'deload', pos:p.buildWeeks, level:w.level, resume:lvl, label:'Lighter week'};
   return {kind:'build', pos:pos, level:lvl, resume:lvl, label:'Build week ' + pos + ' of ' + p.buildWeeks};
 };
 
 /* ============ small ui helpers ============ */
 const ov = $('ov'), sh = $('sh');
-const openSheet = html => { sh.innerHTML = '<div class="grab"></div>' + html; sh.classList.add('on'); ov.classList.add('on'); sh.scrollTop = 0; try { sh.focus({preventScroll:true}); } catch (e) {} };
-const closeSheet = () => { sh.classList.remove('on'); ov.classList.remove('on'); };
+const openSheet = html => { clearTimeout(sheetClear); sh.innerHTML = '<div class="grab"></div>' + html; sh.classList.add('on'); ov.classList.add('on'); sh.scrollTop = 0; try { sh.focus({preventScroll:true}); } catch (e) {} };
+let sheetClear = null;
+const closeSheet = () => { sh.classList.remove('on'); ov.classList.remove('on'); clearTimeout(sheetClear); sheetClear = setTimeout(() => { if (!sh.classList.contains('on')) sh.innerHTML = ''; }, 300); };
 const head = (title, sub) => '<div class="sh-head"><div><div class="sh-title">' + esc(title) + '</div>' + (sub ? '<div class="sh-sub">' + esc(sub) + '</div>' : '') + '</div><button class="icon-btn" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button></div>';
 const toTop = () => { try { window.scrollTo(0, 0); } catch (e) {} };
 let toastTimer = null;
@@ -937,6 +938,7 @@ const openCheckin = () => {
   const pv = nextWeekPreview(ci.feel, ci.repeat);
   let h = head('Finish week ' + w.no, done + ' of ' + list.length + ' sessions done');
   h += '<div class="field"><label>How did the week feel?</label>' + seg('feel', ['easy','right','tough'], ci.feel, ['Easy', 'About right', 'Too much']) + '</div>';
+  if (ci.feel === 'easy') h += '<p class="hint">Felt easy: the quality sessions you ticked step up an extra level. The long run still grows one step, because a jump of more than about 10 percent is where injuries start.</p>';
   if (pct < 0.6 && w.kind === 'build') h += '<div class="field"><label>Under 60 percent of the week done. What next?</label>' + seg('repeat', ['1','0'], ci.repeat ? '1' : '0', ['Repeat this level', 'Move on anyway']) + '<p class="hint">Repeating is not a penalty. A missed session is gone, nothing stacks up.</p></div>';
   h += '<div class="block next"><h4>Next up</h4><p class="big">' + pv.label + '</p><p>' + (pv.kind === 'deload' ? 'About 30 percent less running and half the sets in the gym.' : 'Long run ' + vol(pv.level, false).L + ' min, easy runs around ' + vol(pv.level, false).E1 + ' min.') + '</p></div>';
   h += '<button class="btn pri" data-act="finishweek">Start week ' + (w.no + 1) + '</button>';
@@ -1067,6 +1069,7 @@ const finishWeek = () => {
   const w = S.week, list = tpl(), done = list.filter(s => w.done[s.id]).length, pct = list.length ? done/list.length : 1;
   const c = ci || {feel:'right', repeat:pct < 0.6 && w.kind === 'build'}, pv = nextWeekPreview(c.feel, c.repeat);
   let runMin = 0; list.forEach(s => { if (s.type !== 'strength' && w.done[s.id]) runMin += sessInfo(s).min; });
+  if (c.feel === 'easy' && w.kind === 'build' && !c.repeat) Object.keys(w.bump).forEach(id => { const q = qById(w.bump[id].q); if (q) S.levels[q.id] = Math.min(q.lv.length - 1, (S.levels[q.id] || 0) + 1); });
   S.history.push({no:w.no, kind:w.kind, level:w.level, planned:list.length, done:done, feel:c.feel, runMin:runMin, longMin:vol(w.level, w.kind === 'deload').L, start:w.start, ended:toISO(new Date())});
   S.week = {no:w.no + 1, kind:pv.kind, pos:pv.pos, level:pv.level, resume:pv.resume, start:toISO(mondayOf(new Date())), done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}};
   autoPick(); ci = null; S.tab = 'week';
@@ -1137,8 +1140,8 @@ const act = {
   tab: a => { S.tab = a; save(); render(); toTop(); },
   settings: () => openSetup(!S.profile.setup),
   close: () => closeSheet(),
-  qnext: () => { const err = readSetupInputs(); if (err) { $('seterr').textContent = err; return; } if (qz.step < QSTEPS.length - 1) { qz.step++; renderSetup(); } else finishSetup(); },
-  qback: () => { readSetupInputs(); qz.step--; renderSetup(); },
+  qnext: () => { if (!qz) return; const err = readSetupInputs(); if (err) { $('seterr').textContent = err; return; } if (qz.step < QSTEPS.length - 1) { qz.step++; renderSetup(); } else finishSetup(); },
+  qback: () => { if (!qz) return; readSetupInputs(); if (qz.step > 0) qz.step--; renderSetup(); },
   seg: (a, t) => {
     const key = t.getAttribute('data-key'), val = isNaN(+a) || key === 'freeDay' ? a : +a;
     t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t ? 'true' : 'false'));
