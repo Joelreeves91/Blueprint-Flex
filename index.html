@@ -177,6 +177,16 @@ button.rest span{display:block;font-size:.74rem;color:#3b434c}
 .seg button{padding:10px 2px;font-size:.86rem;line-height:1.2;min-width:0}
 textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font:inherit;color:var(--text);font-size:.78rem;word-break:break-all}
 .btn.sm.warn{margin-top:8px}
+.dnote.warn{color:var(--gold)}
+.top .brand{flex:1}
+.sync{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;padding:5px 10px;border-radius:99px;border:1px solid var(--border);color:var(--dim);margin-right:4px;flex:none}
+.sync i{display:block;width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.sync.ok{color:var(--strength);border-color:#1e5a2b}.sync.ok i{background:var(--strength)}
+.sync.syncing{color:var(--easy);border-color:#1f4a7a}.sync.syncing i{background:var(--easy)}
+.sync.local,.sync.fail{color:var(--gold);border-color:#5b4514}.sync.local i,.sync.fail i{background:var(--gold)}
+.hint.warnhint{color:var(--gold)}
+.top .brand{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:1.4rem}
+.sync span{white-space:nowrap}
 
 </style>
 </head>
@@ -184,6 +194,7 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-r
 <div class="app">
   <div class="top">
     <div class="brand">Blueprint Flex</div>
+    <button class="sync local" id="sync" data-act="syncpill" aria-label="Cloud sync status"><i></i><span>This phone only</span></button>
     <button class="icon-btn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
   <main id="view"></main>
@@ -196,6 +207,22 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-r
 <div class="overlay" id="ov"></div>
 <div class="sheet" id="sh" tabindex="-1" role="dialog" aria-modal="true" aria-label="Details"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- Per-person deploy: set a key here and the site syncs that person without a ?u= link. Leave empty for one shared site with ?u=name links. -->
+<script>window.FLEX_KEY = '';</script>
+<!-- Firebase, same project as Blueprint, its own "flex" collection -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  try{
+    firebase.initializeApp({apiKey:"AIzaSyC5QoBcLCQR-YwDzLL9FSuHtYd2LbzSHDQ",authDomain:"runner-plan-host.firebaseapp.com",projectId:"runner-plan-host",storageBucket:"runner-plan-host.firebasestorage.app",messagingSenderId:"111197627239",appId:"1:111197627239:web:5d16ed974c66b9ec6a45c2"});
+    var db=firebase.firestore();
+    window.fbSave=function(key,state){return db.collection('flex').doc(key).set({v:2,updated:state.updated||Date.now(),name:(state.profile&&state.profile.name)||'',state:JSON.stringify(state)});};
+    window.fbLoad=function(key){return db.collection('flex').doc(key).get().then(function(snap){if(!snap.exists)return null;var d=snap.data();try{var o=JSON.parse(d.state);o.updated=d.updated||o.updated;return o;}catch(e){return null;}});};
+    window.dispatchEvent(new Event('firebaseReady'));
+  }catch(e){console.warn('Firebase unavailable:',e);}
+})();
+</script>
 <script>
 (function(){
 'use strict';
@@ -289,22 +316,28 @@ const EXMAP = {};
 EXL.forEach(e => { EXMAP[e.id] = e; });
 const PATNAME = {squat:'Squat', hinge:'Hinge', lunge:'Single leg', hpush:'Horizontal push', hpush_inc:'Incline push', hpull:'Row', vpush:'Overhead press', vpull:'Pull-up or pulldown', core:'Core', core_anti:'Anti-rotation', hip:'Hips', calf:'Calves', tri:'Triceps', bi:'Biceps', delt:'Shoulders', rear:'Rear shoulders', mob_hip:'Hip mobility', mob_hipflex:'Hip flexors', mob_ankle:'Ankles', mob_tspine:'Upper back', mob_global:'Full body'};
 
-/* strength session templates: pattern slots, resolved to exercises by equipment and niggle */
+/* strength session templates: pattern slots, resolved to exercises by equipment and niggle.
+   A slot like 'squat:2' takes the second-choice exercise for that pattern, so paired sessions
+   (A and B) never share the same main lift. grp drives the spacing rule: sessions of the same
+   group are never put on consecutive days. */
 const SS = {
-  FBA:{name:'Full body A', sub:'Squat and press', lower:true, min:45, slots:['squat','hpush','hpull','hip','core_anti']},
-  FBB:{name:'Full body B', sub:'Hinge and pull', lower:true, min:45, slots:['hinge','vpush','vpull','hip','core']},
-  FBC:{name:'Full body C', sub:'Single leg and incline', lower:true, min:45, slots:['lunge','hpush_inc','hpull','calf','core_anti']},
-  UPA:{name:'Upper A', sub:'Press biased, easy on the legs', lower:false, min:40, slots:['hpush','hpull','vpush','tri','core_anti']},
-  UPB:{name:'Upper B', sub:'Pull biased, easy on the legs', lower:false, min:40, slots:['vpull','hpush_inc','hpull','bi','rear']},
-  LOA:{name:'Lower A', sub:'Squat biased', lower:true, min:45, slots:['squat','lunge','hinge','hip','calf']},
-  LOB:{name:'Lower B', sub:'Hinge biased', lower:true, min:45, slots:['hinge','lunge','squat','hip','core']},
-  PUSH:{name:'Push', sub:'Chest, shoulders and triceps', lower:false, min:40, slots:['hpush','vpush','hpush_inc','delt','tri']},
-  PULL:{name:'Pull', sub:'Back and biceps', lower:false, min:40, slots:['vpull','hpull','rear','bi','core']},
-  LEGS:{name:'Legs', sub:'The full lower body', lower:true, min:45, slots:['squat','hinge','lunge','hip','calf']},
-  CORE:{name:'Hips and core', sub:'Runner prehab, 25 minutes', lower:false, min:25, slots:['hip','core_anti','core','calf']},
-  MOB:{name:'Mobility', sub:'20 minutes for stiff hips and ankles', lower:false, min:20, slots:['mob_hip','mob_hipflex','mob_ankle','mob_tspine','mob_global']}
+  FBA:{name:'Full body A', sub:'Squat and press', grp:'full', lower:true, min:45, slots:['squat','hpush','hpull','hip','core_anti']},
+  FBB:{name:'Full body B', sub:'Hinge and pull', grp:'full', lower:true, min:45, slots:['hinge','vpush','vpull','hip','core']},
+  FBC:{name:'Full body C', sub:'Single leg and incline', grp:'full', lower:true, min:45, slots:['lunge','hpush_inc','hpull:2','calf','core_anti']},
+  UPA:{name:'Upper A', sub:'Press biased, easy on the legs', grp:'upper', lower:false, min:40, slots:['hpush','hpull','vpush','tri','core_anti']},
+  UPB:{name:'Upper B', sub:'Pull biased, easy on the legs', grp:'upper', lower:false, min:40, slots:['vpull','hpush_inc','hpull:2','bi','rear']},
+  LOA:{name:'Lower A', sub:'Squat biased', grp:'lower', lower:true, min:45, slots:['squat','lunge','hinge:2','hip','calf']},
+  LOB:{name:'Lower B', sub:'Hinge biased', grp:'lower', lower:true, min:45, slots:['hinge','lunge:2','squat:2','hip','core']},
+  PUSHA:{name:'Push A', sub:'Chest, shoulders and triceps', grp:'push', lower:false, min:40, slots:['hpush','vpush','hpush_inc','delt','tri']},
+  PUSHB:{name:'Push B', sub:'Dumbbell biased pressing', grp:'push', lower:false, min:40, slots:['hpush:2','vpush:2','hpush_inc','tri:2','core_anti']},
+  PULLA:{name:'Pull A', sub:'Back and biceps', grp:'pull', lower:false, min:40, slots:['vpull','hpull','rear','bi','core']},
+  PULLB:{name:'Pull B', sub:'Row biased back work', grp:'pull', lower:false, min:40, slots:['vpull:2','hpull:2','hpull:3','rear:2','bi:2']},
+  CORE:{name:'Hips and core', sub:'Runner prehab, 25 minutes', grp:'core', lower:false, min:25, slots:['hip','core_anti','core','calf']},
+  MOB:{name:'Mobility', sub:'20 minutes for stiff hips and ankles', grp:'core', lower:false, min:20, slots:['mob_hip','mob_hipflex','mob_ankle','mob_tspine','mob_global']}
 };
-const SPLIT = {0:[], 1:['FBA'], 2:['FBA','FBB'], 3:['FBA','FBB','FBC'], 4:['UPA','LOA','UPB','LOB'], 5:['UPA','LOA','UPB','LOB','CORE'], 6:['PUSH','PULL','LEGS','UPA','LOB','CORE'], 7:['PUSH','PULL','LEGS','UPA','LOB','CORE','MOB']};
+const SPLIT = {0:[], 1:['FBA'], 2:['FBA','FBB'], 3:['FBA','FBB','FBC'], 4:['UPA','LOA','UPB','LOB'], 5:['UPA','LOA','UPB','LOB','CORE'], 6:['PUSHA','PULLA','LOA','PUSHB','PULLB','LOB'], 7:['PUSHA','PULLA','LOA','PUSHB','PULLB','LOB','CORE']};
+/* groups that must not sit on consecutive days (same muscles need about 48 hours) */
+const CLASH = {lower:['lower','full'], full:['lower','full','upper','push','pull'], upper:['upper','full','push','pull'], push:['push','full','upper'], pull:['pull','full','upper'], core:[]};
 /* exercises a niggle prefers in a slot, if the equipment allows */
 const NIGGLE_PREF = {itb:{hip:'lbw', calf:'slcr', core:'spl'}, calf:{calf:'ecc', hip:'slgb'}, none:{}};
 const NIGGLE_AVOID = {itb:[], calf:['stp'], none:[]};
@@ -391,7 +424,43 @@ const load = () => {
   return fresh();
 };
 let S = load();
-const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
+const KEYSTORE = 'bpflex.key';
+const syncKey = () => {
+  let k = null;
+  try { k = new URLSearchParams(location.search).get('u'); } catch (e) {}
+  if (k) { k = k.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40) || null; if (k) { try { localStorage.setItem(KEYSTORE, k); } catch (e) {} } }
+  if (!k) { try { k = localStorage.getItem(KEYSTORE); } catch (e) {} }
+  if (!k && window.FLEX_KEY) k = window.FLEX_KEY;
+  return k || null;
+};
+let pushTimer = null;
+let cloudReady = false;     /* nothing is pushed until the first cloud check has finished */
+let pendingCloud = null;    /* set while two different plans exist and the person has not chosen */
+const normKey = v => String(v || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+const SYNCTXT = {local:'This phone only', syncing:'Saving', ok:'Synced', fail:'Not saved to cloud'};
+const setSync = st => { const el = document.getElementById('sync'); if (!el) return; el.className = 'sync ' + st; const sp = el.querySelector('span'); if (sp) sp.textContent = SYNCTXT[st]; };
+const pushCloud = () => {
+  const k = syncKey();
+  if (!k) { setSync('local'); return; }
+  if (!cloudReady) return;
+  if (!window.fbSave) { setSync('fail'); return; }
+  setSync('syncing'); clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => { window.fbSave(syncKey(), S).then(() => { S.synced = S.updated; setSync('ok'); setStatus('Synced'); }, () => { setSync('fail'); setStatus('Not saved to cloud, will retry'); }); }, 800);
+};
+let setStatus = () => {};
+/* quiet saves keep the local copy current without claiming it is newer or pushing it */
+const save = quiet => { if (!quiet) S.updated = Date.now(); try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} if (!quiet) pushCloud(); };
+/* installed home-screen apps on iPhone have their own storage, so the code travels in the app's start link too */
+const setManifest = () => {
+  const k = syncKey();
+  if (!k || !window.URL || !URL.createObjectURL || typeof Blob === 'undefined' || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const o = location.origin;
+    const m = {name:'Blueprint Flex', short_name:'Flex', description:'Open-ended running and strength training', start_url:o + '/?u=' + k, scope:o + '/', display:'standalone', background_color:'#0d1117', theme_color:'#0d1117', orientation:'portrait-primary', icons:[{src:o + '/icon-192.png', sizes:'192x192', type:'image/png', purpose:'any maskable'}, {src:o + '/icon-512.png', sizes:'512x512', type:'image/png', purpose:'any maskable'}]};
+    const link = document.querySelector('link[rel="manifest"]');
+    if (link) link.setAttribute('href', URL.createObjectURL(new Blob([JSON.stringify(m)], {type:'application/manifest+json'})));
+  } catch (e) {}
+};
 
 /* ============ pace engine (Daniels VDOT from a recent 5K) ============ */
 const vdotOf = sec => {
@@ -455,27 +524,42 @@ const genTemplate = p => {
     (pick || easies[easies.length - 1]).strides = true;
     if (easies.length >= 3) { const first = easies.find(s => !s.strides); if (first) first.strides = true; }
   }
-  /* strength */
+  /* strength: search every assignment of sessions to days and keep the cheapest.
+     Hard rules via big penalties: same muscle group never on consecutive days, free day kept free.
+     Soft rules: heavy legs not the day before a hard run or the day after the long run,
+     upper sessions preferred on those days. */
   const m = clamp(p.strengthDays, 0, 7), keys = SPLIT[m] || [];
-  const hard = {}, before = {};
-  out.forEach(s => { if (s.type === 'quality' || s.type === 'long') { hard[s.day] = s.type; before[prevDay(s.day)] = true; } });
-  const runOn = {}; out.forEach(s => { runOn[s.day] = true; });
-  const cost = (d, lower, allowFree) => {
-    let c = 0;
-    if (d === p.freeDay) c += allowFree ? 0 : 50;
-    if (hard[d] === 'long') c += 6; else if (hard[d] === 'quality') c += 5; else if (runOn[d]) c += 1;
-    if (before[d]) c += lower ? 4 : 1;
-    return c;
-  };
-  const sUsed = {};
-  const order = keys.slice().sort((a, b) => (SS[b].lower ? 1 : 0) - (SS[a].lower ? 1 : 0));
-  order.forEach(k => {
-    const lower = SS[k].lower, allowFree = m === 7;
-    let best = null, bc = Infinity;
-    DAYS.forEach(d => { const c = cost(d, lower, allowFree) + (sUsed[d] ? 100 : 0); if (c < bc) { bc = c; best = d; } });
-    sUsed[best] = true;
-    out.push({id:uid('s'), type:'strength', day:best, key:k});
-  });
+  if (keys.length) {
+    const hard = {}, runOn = {}, longOn = {};
+    out.forEach(x => { runOn[x.day] = x.type; if (x.type === 'quality' || x.type === 'long') hard[x.day] = x.type; if (x.type === 'long') longOn[x.day] = true; });
+    const dayCost = (k, d) => {
+      const legs = SS[k].lower, core = SS[k].grp === 'core';
+      let c = 0;
+      if (d === p.freeDay && m < 7) c += 50;
+      if (hard[d] === 'long') c += legs ? 8 : 6; else if (hard[d] === 'quality') c += 5; else if (runOn[d]) c += 1;
+      if (hard[nextDay(d)] && !core) c += legs ? 6 : 1;
+      if (longOn[prevDay(d)] && legs) c += 4;
+      return c;
+    };
+    const clash = (a, b) => CLASH[SS[a].grp].indexOf(SS[b].grp) >= 0;
+    let best = null, bestCost = Infinity;
+    const assign = {}, used = {};
+    const dfs = (i, cost) => {
+      if (cost >= bestCost) return;
+      if (i === keys.length) { bestCost = cost; best = Object.assign({}, assign); return; }
+      const k = keys[i];
+      DAYS.forEach(d => {
+        if (used[d]) return;
+        let c = dayCost(k, d);
+        Object.keys(assign).forEach(k2 => { const d2 = assign[k2]; if ((nextDay(d) === d2 || prevDay(d) === d2) && clash(k, k2)) c += 40; });
+        assign[k] = d; used[d] = true;
+        dfs(i + 1, cost + c);
+        delete assign[k]; delete used[d];
+      });
+    };
+    dfs(0, 0);
+    keys.forEach(k => out.push({id:uid('s'), type:'strength', day:best[k], key:k}));
+  }
   return out;
 };
 const sortTemplate = t => t.slice().sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || (a.type === 'strength' ? 1 : 0) - (b.type === 'strength' ? 1 : 0));
@@ -484,16 +568,18 @@ const slotById = id => S.template.find(s => s.id === id);
 
 /* ============ strength resolution ============ */
 const fitsEq = e => e.eq.indexOf(S.profile.equipment) >= 0;
-const candidates = pat => EXL.filter(e => e.pat === pat && fitsEq(e) && NIGGLE_AVOID[S.profile.niggle].indexOf(e.id) < 0);
+const candidates = pat => EXL.filter(e => e.pat === slotPat(pat) && fitsEq(e) && NIGGLE_AVOID[S.profile.niggle].indexOf(e.id) < 0);
+const slotPat = sl => sl.split(':')[0];
+const slotRank = sl => (+sl.split(':')[1] || 1) - 1;
 const resolveSlot = (key, i) => {
-  const pat = SS[key].slots[i], sw = S.swaps[key] && S.swaps[key][i];
+  const sl = SS[key].slots[i], pat = slotPat(sl), rank = slotRank(sl), sw = S.swaps[key] && S.swaps[key][i];
   if (sw && EXMAP[sw] && fitsEq(EXMAP[sw])) return EXMAP[sw];
   const pref = NIGGLE_PREF[S.profile.niggle][pat];
-  if (pref && EXMAP[pref] && fitsEq(EXMAP[pref])) return EXMAP[pref];
+  if (pref && EXMAP[pref] && fitsEq(EXMAP[pref]) && rank === 0) return EXMAP[pref];
   const c = candidates(pat);
-  return c[0] || null;
+  return c[Math.min(rank, c.length - 1)] || null;
 };
-const sessionEx = key => SS[key].slots.map((pat, i) => resolveSlot(key, i)).filter(Boolean);
+const sessionEx = key => SS[key].slots.map((sl, i) => resolveSlot(key, i)).filter(Boolean);
 const maintain = () => S.profile.focus === 'run';
 const setsFor = (e, dl) => { const n = maintain() && e.tr ? Math.max(2, e.sets - 1) : e.sets; return dl ? Math.max(1, Math.round(n/2)) : n; };
 const e1rm = (w, r) => r === 1 ? w : w*(1 + r/30);
@@ -559,6 +645,20 @@ const sessInfo = s => {
   const ss = SS[s.key];
   return {t:ss ? ss.name : 'Strength', s:ss ? ss.sub : 'Tap to choose a session', c:'strength', min:0, choose:!ss};
 };
+const weekWarnings = () => { /* day -> note, for clashes the user has created by moving things */
+  const list = tpl(), notes = {}, byDay = {};
+  list.forEach(x => { byDay[x.day] = byDay[x.day] || []; byDay[x.day].push(x); });
+  DAYS.forEach(d => {
+    const ss = (byDay[d] || []).filter(x => x.type === 'strength' && SS[x.key]);
+    ss.forEach(x => {
+      const prev = (byDay[prevDay(d)] || []).filter(y => y.type === 'strength' && SS[y.key] && CLASH[SS[x.key].grp].indexOf(SS[y.key].grp) >= 0);
+      if (prev.length) notes[d] = SS[x.key].name + ' straight after ' + SS[prev[0].key].name + ': the same muscles need about 48 hours. Move one of them.';
+      else if (SS[x.key].lower && (byDay[nextDay(d)] || []).some(y => y.type === 'quality' || y.type === 'long')) notes[d] = notes[d] || 'Heavy legs the day before a hard run. An upper or hips-and-core session fits better here.';
+    });
+    if (ss.length > 1) notes[d] = 'Two strength sessions on one day. Keep one.';
+  });
+  return notes;
+};
 const runMinutesPlanned = () => { let t = 0; tpl().forEach(s => { if (s.type !== 'strength') t += sessInfo(s).min; }); return t; };
 const nextWeekPreview = (feel, repeat) => {
   const w = S.week, p = S.profile;
@@ -596,7 +696,10 @@ const renderWeek = () => {
   const done = list.filter(s => w.done[s.id]).length, planned = runMinutesPlanned();
   let h = '';
   const sinceTest = w.no - (p.testWeek || 1);
-  if (toISO(mondayOf(new Date())) > w.start && w.start) h += '<div class="banner">A new calendar week has started. Finish week ' + w.no + ' when you are ready to move on.<button data-act="checkin">Finish week ' + w.no + '</button></div>';
+  if (!p.setup) h += '<div class="banner">Your week is not set up yet.<button data-act="settings">Set it up now</button></div>';
+  else if (pendingCloud) h += '<div class="banner">Two different plans were found under your code, and nothing is being saved until you choose.<button data-act="syncpill">Choose which to keep</button></div>';
+  else if (!syncKey()) h += '<div class="banner">This phone is not linked to the cloud, so your plan only exists here. Clear browser data or change phone and it is gone.<button data-act="link">Link with your code</button></div>';
+  else if (toISO(mondayOf(new Date())) > w.start && w.start) h += '<div class="banner">A new calendar week has started. Finish week ' + w.no + ' when you are ready to move on.<button data-act="checkin">Finish week ' + w.no + '</button></div>';
   else if (hasPaces() && sinceTest >= 8 && !dl) h += '<div class="banner">It has been ' + sinceTest + ' weeks since you set your 5K. Run a parkrun and update it so every pace matches your fitness now.<button data-act="retest">Update my 5K</button></div>';
   h += '<div class="weekhead"><span class="weekno">Week ' + w.no + '</span><span class="phase ' + (dl ? 'deload' : 'build') + '">' + (dl ? 'Lighter week' : 'Build week ' + w.pos + ' of ' + p.buildWeeks) + '</span></div>';
   h += '<div class="cycle" aria-hidden="true">';
@@ -606,11 +709,12 @@ const renderWeek = () => {
   h += '<p class="cyclenote">' + (dl ? 'Same sessions, less of them. Building again next week.' : left <= 0 ? 'A lighter week comes next.' : left + (left === 1 ? ' more build week' : ' more build weeks') + ' before a lighter one.') + '</p>';
   h += '<div class="stats"><div class="stat"><b>' + done + ' of ' + list.length + '</b><span>sessions done</span></div><div class="stat"><b>' + (planned ? fmtHM(planned) : 'No runs') + '</b><span>' + (planned ? 'of running planned' : 'this week') + '</span></div></div>';
   if (w.no === 1 && !done) h += '<p class="hint">Tap a session for the detail. Tick it when it is done. Drag the handle to another day, or tap a rest day to add something.</p>';
-  const today = todayKey();
+  const today = todayKey(), warns = weekWarnings();
+  if (p.strengthDays >= 5 && p.runDays >= 3 && w.no === 1) h += '<p class="hint">' + p.strengthDays + ' lifting days alongside ' + p.runDays + ' runs is a lot of leg load. The two lower-body days are kept apart from each other and from the long run; if your legs feel flat, drop one.</p>';
   DAYS.forEach(d => {
     const ss = list.filter(s => s.day === d), both = ss.some(s => s.type !== 'strength') && ss.some(s => s.type === 'strength');
     h += '<div class="day' + (d === today ? ' today' : '') + '" data-day="' + d + '"><div class="dlabel">' + DAY3[d] + (d === today ? '<i class="today-dot"></i>' : '') + '</div><div class="stack">'
-      + (ss.length ? ss.map(card).join('') + (both ? '<div class="dnote">Run first, lift later in the day if you can.</div>' : '') : '<button class="rest" data-act="add" data-arg="' + d + '">Rest<span>Tap to add a session</span></button>')
+      + (ss.length ? ss.map(card).join('') + (warns[d] ? '<div class="dnote warn">' + esc(warns[d]) + '</div>' : both ? '<div class="dnote">Run first, lift later in the day if you can.</div>' : '') : '<button class="rest" data-act="add" data-arg="' + d + '">Rest<span>Tap to add a session</span></button>')
       + '</div></div>';
   });
   h += '<button class="btn finish ' + (done === list.length && list.length ? 'ok' : '') + '" data-act="checkin">Finish week ' + w.no + '</button>';
@@ -671,7 +775,8 @@ const renderProgress = () => {
   h += '<div class="sec-title sub">Lifts</div><div class="list">';
   h += ls.length ? ls.map(id => { const L = S.lifts[id], e = EXMAP[id], d = L.weight - L.first, best = L.last ? Math.round(e1rm(L.last.w, Math.max.apply(null, L.last.reps))) : null; return '<div class="li"><span>' + e.n + '</span><span>' + L.weight + ' ' + (e.unit || 'kg') + (d > 0 ? ', up ' + (Math.round(d*10)/10) : '') + (best && !e.unit ? ', est. max ' + best + ' kg' : '') + '</span></div>'; }).join('') : '<div class="li"><span>Nothing logged yet</span><span></span></div>';
   h += '</div>';
-  h += '<button class="btn sm" data-act="backup" style="margin-top:18px">Back up or restore</button>';
+  h += '<p class="hint" style="margin-top:18px" id="syncline">' + (syncKey() ? 'Cloud sync on as ' + esc(syncKey()) + '.' : 'Not linked to the cloud: progress is only on this phone.') + '</p>';
+  h += '<button class="btn sm" data-act="backup">Back up or restore</button>';
   return h;
 };
 
@@ -772,7 +877,8 @@ const openSPicker = s => {
   let h = head('Choose a strength session', DAYLONG[s.day] + (nxt ? ', the day before a hard run' : ''));
   if (nxt) h += '<p class="hint">Upper-body or hips-and-core sessions are the best fit before a hard run: your legs stay fresh for it.</p>';
   Object.keys(SS).forEach(k => {
-    const x = SS[k], tag = k === cur ? 'Current' : (nxt && x.lower ? 'Heavy legs' : (nxt && !x.lower ? 'Good fit' : ''));
+    const x = SS[k], nb = tpl().filter(y => y.type === 'strength' && y.id !== s.id && SS[y.key] && (y.day === prevDay(s.day) || y.day === nextDay(s.day)) && CLASH[x.grp].indexOf(SS[y.key].grp) >= 0);
+    const tag = k === cur ? 'Current' : nb.length ? 'Clashes with ' + DAY3[nb[0].day] : (nxt && x.lower ? 'Heavy legs' : (nxt && !x.lower ? 'Good fit' : ''));
     h += '<div role="button" tabindex="0" class="opt" style="--c:var(--strength)" data-act="picks" data-arg="' + s.id + '|' + k + '"><span class="t"><span class="tag">' + tag + '</span>' + x.name + '</span><span class="s">' + x.sub + ', about ' + x.min + ' min</span></div>';
   });
   openSheet(h);
@@ -807,7 +913,7 @@ const openS = s => {
   openSheet(h);
 };
 const openSwap = (key, i) => {
-  const pat = SS[key].slots[i], cur = resolveSlot(key, i), c = candidates(pat);
+  const pat = slotPat(SS[key].slots[i]), cur = resolveSlot(key, i), c = candidates(pat);
   let h = head('Swap ' + (cur ? cur.n : PATNAME[pat]), PATNAME[pat] + ' alternatives for your equipment');
   c.forEach(e => { h += '<div role="button" tabindex="0" class="opt" style="--c:var(--strength)" data-act="doswap" data-arg="' + key + '|' + i + '|' + e.id + '"><span class="t"><span class="tag">' + (cur && cur.id === e.id ? 'Current' : (S.lifts[e.id] ? 'Logged before' : '')) + '</span>' + e.n + '</span><span class="s">' + e.nt + '</span></div>'; });
   h += '<p class="hint">Alternatives keep the same movement pattern, so the session still does its job. Pick what your joints and your gym allow, then stick with it so progress is measurable.</p>';
@@ -848,7 +954,10 @@ const openRetest = () => {
   openSheet(h);
 };
 const openBackup = () => {
-  let h = head('Back up or restore', 'Progress lives in this browser. Copy the code to keep it safe or move phones.');
+  const k = syncKey();
+  let h = head('Back up or restore', k ? 'Progress syncs to the cloud as ' + k + '. The code below is a spare copy.' : 'Progress lives in this browser. Copy the code to keep it safe or move phones.');
+  if (k) h += '<div class="block"><h4>Your code</h4><p class="big">' + esc(k) + '</p><p>Your link is ' + esc(location.origin + '/?u=' + k) + '. Open it on any phone, or type the code into "Already have a code".</p></div><button class="btn sm" data-act="link">Change code</button>';
+  else h += '<button class="btn sm pri" data-act="link">Link this phone</button>';
   h += '<div class="field"><label for="bk">Your backup code</label><textarea id="bk" rows="4" readonly>' + esc(btoa(unescape(encodeURIComponent(JSON.stringify(S))))) + '</textarea></div><button class="btn sm" data-act="copybk">Copy backup code</button>';
   h += '<div class="field"><label for="rs">Restore from a code</label><textarea id="rs" rows="3" placeholder="Paste a backup code"></textarea></div><div id="rserr" class="err" role="alert"></div><button class="btn sm" data-act="restore">Restore</button>';
   openSheet(h);
@@ -868,6 +977,7 @@ const renderSetup = () => {
   if (st === 'focus') {
     h += head(qz.first ? 'Let\u2019s build your week' : 'Your focus', 'Five quick questions. Change any of them later in settings.');
     h += '<div class="field"><label>What matters most right now?</label>' + seg('focus', ['run','both','strength'], d.focus, ['Running', 'Both', 'Strength']) + '<p class="hint">Running focus keeps lifting at maintenance so your legs are fresh for runs. Strength focus progresses lifts and builds the long run more gently. Both does both, a little slower each.</p></div>';
+    if (qz.first) h += '<button class="linkbtn" data-act="link">Already have a code? Link this phone</button>';
   } else if (st === 'running') {
     h += head('Running', 'The week fills itself in from these.');
     h += '<div class="field"><label>Running days per week</label>' + seg('runDays', [0,1,2,3,4,5,6,7], d.runDays) + '<p class="hint">3 gives you easy, quality and long. 4 adds a second easy run, and so on. At 7 you get two quality sessions.</p></div>';
@@ -885,6 +995,8 @@ const renderSetup = () => {
     h += head('Your cycle', 'How the weeks repeat.');
     h += '<div class="field"><label>Build weeks before a lighter week</label>' + seg('buildWeeks', [2,3,4,5], d.buildWeeks) + '<p class="hint">3 means three weeks building, then one lighter week, on repeat. You can call a lighter week early any time.</p></div>';
     h += '<div class="field"><label>Day you most want free</label>' + seg('freeDay', DAYS, d.freeDay, DAYS.map(x => DAY3[x])) + '<p class="hint">Kept clear unless you train every day.</p></div>';
+    const pr = S.profile, changed = !qz.first && (d.runDays !== pr.runDays || d.strengthDays !== pr.strengthDays || d.freeDay !== pr.freeDay), progress = Object.keys(S.week.done).length || Object.keys(S.week.logs).length;
+    if (changed && progress) h += '<p class="hint warnhint">Changing your running days, strength days or free day rebuilds this week and clears this week\u2019s ticks and logged weights. Past weeks, lifts and levels are kept.</p>';
   }
   h += '<div id="seterr" class="err" role="alert"></div>';
   h += '<div class="row">' + (qz.step > 0 ? '<button class="btn half" data-act="qback">Back</button>' : (qz.first ? '' : '<button class="btn half" data-act="close">Cancel</button>')) + '<button class="btn half pri" data-act="qnext">' + (qz.step === n - 1 ? (qz.first ? 'Build my week' : 'Save') : 'Next') + '</button></div>';
@@ -961,6 +1073,65 @@ const finishWeek = () => {
   save(); closeSheet(); render(); toTop(); toast('Week ' + w.no + ' done. Next: ' + pv.label);
 };
 
+/* ============ cloud: reconcile and link ============ */
+const progressOf = x => (x.history || []).length;
+const takeCloud = cloud => {
+  S = merge(fresh(), cloud); S.updated = cloud.updated || S.updated || Date.now();
+  try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {}
+  qz = null; cloudReady = true; pendingCloud = null;
+  if (S.profile.setup) autoPick();
+  closeSheet(); render(); setSync('ok'); toast('Picked up your plan from the cloud');
+};
+const askWhich = cloud => {
+  pendingCloud = cloud; setSync('fail');
+  const fmt = ts => ts ? new Date(ts).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'a while ago';
+  const desc = (x, ts) => 'Week ' + x.week.no + ', ' + progressOf(x) + (progressOf(x) === 1 ? ' week' : ' weeks') + ' finished, last used ' + fmt(ts);
+  let h = head('Which plan do you want to keep?', 'This phone and the cloud hold different plans under your code. The one you pick replaces the other.');
+  h += '<div role="button" tabindex="0" class="opt" style="--c:var(--easy)" data-act="keepcloud"><span class="t"><span class="tag">Usually the one you want</span>Plan in the cloud</span><span class="s">' + desc(cloud, cloud.updated) + '</span></div>';
+  h += '<div role="button" tabindex="0" class="opt" style="--c:var(--gold)" data-act="keeplocal"><span class="t">Plan on this phone</span><span class="s">' + desc(S, S.updated) + '</span></div>';
+  h += '<p class="hint">Nothing is saved to the cloud until you choose.</p>';
+  render(); openSheet(h);
+};
+const reconcile = cloud => {
+  const cloudSet = !!(cloud && cloud.v === 2 && cloud.profile && cloud.profile.setup), localSet = !!S.profile.setup;
+  if (!cloudSet) { cloudReady = true; if (localSet) pushCloud(); else setSync('ok'); return; }
+  if (!localSet) { takeCloud(cloud); return; }
+  const cNewer = (cloud.updated || 0) > (S.updated || 0), pc = progressOf(cloud), pl = progressOf(S);
+  if (cNewer && pc >= pl) { takeCloud(cloud); return; }          /* normal: another device moved on */
+  if (!cNewer && pl >= pc) { cloudReady = true; pushCloud(); return; } /* normal: this device is ahead */
+  askWhich(cloud);                                                /* newest and furthest-along disagree: ask, never guess */
+};
+const cloudBoot = () => {
+  const k = syncKey();
+  if (!k) { setSync('local'); return; }
+  if (!window.fbLoad) return;
+  cloudReady = false; setSync('syncing');
+  window.fbLoad(k).then(reconcile, () => setSync('fail'));
+};
+const openLink = () => {
+  const k = syncKey();
+  let h = head(k ? 'Change your code' : 'Link this phone', 'Your code ties your plan to you, so it survives a new phone or cleared browser data.');
+  h += '<div class="field"><label for="lcode">Your code</label><input id="lcode" type="text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="the part after ?u= in your link" value="' + esc(k || '') + '"><p class="hint">Not sure? It is the end of the link you were sent, after ?u=</p></div><div id="lerr" class="err" role="alert"></div><button class="btn pri" data-act="dolink">Link and load my plan</button>';
+  openSheet(h);
+};
+const doLink = () => {
+  const k = normKey($('lcode').value), err = $('lerr');
+  if (k.length < 3) { err.textContent = 'Codes are at least 3 letters or numbers, like george-bm.'; return; }
+  if (!window.fbLoad) { setSync('fail'); err.textContent = 'Cannot reach the cloud right now. Check your connection and try again.'; return; }
+  err.textContent = ''; pendingCloud = null;
+  window.fbLoad(k).then(cloud => {
+    try { localStorage.setItem(KEYSTORE, k); } catch (e) {}
+    setManifest(); cloudReady = false; setSync('syncing');
+    const hadSetup = !!S.profile.setup, cloudSet = !!(cloud && cloud.v === 2 && cloud.profile && cloud.profile.setup);
+    reconcile(cloud);
+    if (!pendingCloud && !cloudSet) {
+      closeSheet(); render();
+      if (!hadSetup) { qz = null; openSetup(true); toast('Linked. Nothing saved under that code yet, so let\u2019s set you up'); }
+      else toast('Linked. Your plan is now saved to the cloud');
+    }
+  }, () => { setSync('fail'); err.textContent = 'Could not reach the cloud. Try again in a minute.'; });
+};
+
 /* ============ actions ============ */
 const act = {
   tab: a => { S.tab = a; save(); render(); toTop(); },
@@ -1003,6 +1174,11 @@ const act = {
     S.profile.fiveK = sec; S.profile.testWeek = S.week.no; save(); closeSheet(); render(); toast('Paces updated');
   },
   backup: () => openBackup(),
+  link: () => openLink(),
+  dolink: () => doLink(),
+  syncpill: () => { if (pendingCloud) askWhich(pendingCloud); else if (syncKey()) openBackup(); else openLink(); },
+  keepcloud: () => { if (pendingCloud) takeCloud(pendingCloud); },
+  keeplocal: () => { pendingCloud = null; cloudReady = true; closeSheet(); save(); render(); toast('Kept this phone\u2019s plan and saved it to the cloud'); },
   copybk: () => { const el = $('bk'); el.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(el.value).then(() => toast('Copied'), () => {}); else toast(ok ? 'Copied' : 'Select the code and copy it'); },
   restore: () => {
     try { const o = JSON.parse(decodeURIComponent(escape(atob($('rs').value.trim())))); if (!o || o.v !== 2 || !o.profile) throw new Error('bad'); S = merge(fresh(), o); save(); closeSheet(); render(); toast('Restored'); }
@@ -1030,9 +1206,15 @@ document.addEventListener('keydown', e => {
 ov.addEventListener('click', closeSheet);
 
 /* ============ boot ============ */
-if (S.profile.setup) { autoPick(); save(); }
+setStatus = msg => { const el = $('syncline'); if (el) el.textContent = msg; };
+if (S.profile.setup) { autoPick(); save(true); }
 render();
 if (!S.profile.setup) openSetup(true);
+setManifest();
+setSync(syncKey() ? 'syncing' : 'local');
+if (window.fbLoad) cloudBoot(); else window.addEventListener('firebaseReady', cloudBoot);
+setTimeout(() => { if (syncKey() && !window.fbLoad) setSync('fail'); }, 6000);
+window.addEventListener('online', () => { if (!syncKey()) return; if (pendingCloud) return; if (cloudReady) pushCloud(); else cloudBoot(); });
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('/sw.js').catch(() => {});
 
 

@@ -1,3 +1,10 @@
+[build]
+  publish = "."
+  command = "sh inject.sh"
+
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyC5QoBcLCQR-YwDzLL9FSuHtYd2LbzSHDQ"
+
 [[headers]]
   for = "/sw.js"
   [headers.values]
