@@ -194,7 +194,7 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-r
 <div class="app">
   <div class="top">
     <div class="brand">Blueprint Flex</div>
-    <button class="sync local" id="sync" data-act="syncpill" aria-label="Cloud sync status"><i></i><span>This phone only</span></button>
+    <button class="sync local" id="sync" data-act="syncpill" aria-label="Cloud sync status"><i></i><span>Phone only</span></button>
     <button class="icon-btn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
   <main id="view"></main>
@@ -232,78 +232,98 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-r
    tr: tracked with weight and reps (double progression); otherwise reps or time only
    Order within a pattern is priority: the first exercise that fits the equipment is the default. */
 const EXL = [
-  /* squat */
-  {id:'bsq', pat:'squat', eq:['gym'], n:'Back squat', nt:'Brace, sit between your hips, drive up. Keep the same depth every week.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
-  {id:'gob', pat:'squat', eq:['gym','db'], n:'Goblet squat', nt:'Hold the dumbbell at your chest, elbows inside your knees at the bottom.', tr:true, sets:3, lo:8, hi:12, inc:2},
-  {id:'fsq', pat:'squat', eq:['gym'], n:'Front squat', nt:'Elbows high, chest up. Lighter than a back squat and kinder on the back.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
-  {id:'lp', pat:'squat', eq:['gym'], n:'Leg press', nt:'Full range without your lower back rounding off the pad.', tr:true, sets:3, lo:8, hi:12, inc:5},
-  {id:'bwsq', pat:'squat', eq:['bw'], n:'Tempo squat', nt:'Three seconds down, pause, drive up. Hold weight if you have any.', tr:false, sets:3, per:'12 to 15'},
-  /* hinge */
-  {id:'rdl', pat:'hinge', eq:['gym'], n:'Romanian deadlift', nt:'Soft knees, hips back, flat back. Stop when your hamstrings stretch, then stand up.', tr:true, sets:3, lo:6, hi:8, inc:5},
-  {id:'dbrdl', pat:'hinge', eq:['gym','db'], n:'Dumbbell Romanian deadlift', nt:'Weight is per dumbbell. Hips back, dumbbells close to your legs.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'tbdl', pat:'hinge', eq:['gym'], n:'Trap bar deadlift', nt:'Push the floor away. Easier to learn than a straight bar and just as useful.', tr:true, sets:3, lo:5, hi:8, inc:5},
-  {id:'ht', pat:'hinge', eq:['gym'], n:'Barbell hip thrust', nt:'Chin tucked, ribs down, squeeze at the top for a second.', tr:true, sets:3, lo:8, hi:12, inc:5},
-  {id:'slrdl', pat:'hinge', eq:['gym','db','bw'], n:'Single-leg Romanian deadlift', nt:'Weight is one dumbbell, or none. Reps are each side. Slow and balanced beats heavy.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'gbr', pat:'hinge', eq:['bw'], n:'Glute bridge', nt:'Drive through your heels and squeeze at the top. Add a pause to make it harder.', tr:false, sets:3, per:'15'},
-  /* lunge and single leg */
-  {id:'bss', pat:'lunge', eq:['gym','db','bw'], n:'Bulgarian split squat', nt:'Weight is per dumbbell. Reps are each side. Front shin stays close to vertical.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  /* squat: heavy bilateral first (near-maximal loads are what improve running economy), high-SFR machine next, then single-leg and bodyweight */
+  {id:'bsq', pat:'squat', eq:['gym'], n:'Back squat', nt:'Heavy and low reps. Brace, sit between your hips, full depth you can control. This is the lift that pays off in running economy.', tr:true, sets:3, lo:4, hi:6, inc:2.5},
+  {id:'hack', pat:'squat', eq:['gym'], n:'Hack squat or pendulum squat', nt:'Deep, with the knees travelling forward. Lots of quad stimulus for very little fatigue elsewhere.', tr:true, sets:3, lo:6, hi:10, inc:5},
+  {id:'lp', pat:'squat', eq:['gym'], n:'Leg press', nt:'Full range without your lower back rounding off the pad. Pause at the bottom where the muscle is longest.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'fsq', pat:'squat', eq:['gym'], n:'Front squat', nt:'Elbows high, chest up. Lighter than a back squat and kinder on the back.', tr:true, sets:3, lo:4, hi:6, inc:2.5},
+  {id:'gob', pat:'squat', eq:['gym','db'], n:'Goblet squat', nt:'Dumbbell at your chest, elbows inside your knees at the bottom. Pause there.', tr:true, sets:3, lo:8, hi:12, inc:2},
+  {id:'bwsq', pat:'squat', eq:['bw'], n:'Tempo squat', nt:'Three seconds down, pause at the bottom, drive up. Load a rucksack if you have one.', tr:false, sets:3, per:'12 to 15'},
+  /* hinge: long-length hamstring work first, heavy pull for strength, hip thrust for the glutes at short length */
+  {id:'rdl', pat:'hinge', eq:['gym'], n:'Romanian deadlift', nt:'Hips back, bar on your thighs, flat back. Go as low as your hamstrings allow and pause there: that stretched position is where the growth happens.', tr:true, sets:3, lo:6, hi:8, inc:5},
+  {id:'ht', pat:'hinge', eq:['gym'], n:'Barbell hip thrust', nt:'Chin tucked, ribs down, squeeze for a second at the top. Covers the part of the glute that a deadlift misses.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'tbdl', pat:'hinge', eq:['gym'], n:'Trap bar deadlift', nt:'Heavy and low reps. Push the floor away. Easier to learn than a straight bar and just as useful.', tr:true, sets:3, lo:4, hi:6, inc:5},
+  {id:'dbrdl', pat:'hinge', eq:['gym','db'], n:'Dumbbell Romanian deadlift', nt:'Weight is per dumbbell. Dumbbells down your legs, hips back, pause at the bottom.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'slrdl', pat:'hinge', eq:['gym','db','bw'], n:'Single-leg Romanian deadlift', nt:'One dumbbell or none. Reps are each side. Slow and balanced beats heavy.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'gbr', pat:'hinge', eq:['bw'], n:'Glute bridge', nt:'Drive through your heels, squeeze at the top. Add a pause or a single leg to make it harder.', tr:false, sets:3, per:'15'},
+  /* knee flexion: the hamstring region a hinge does not cover; Nordics are the best-evidenced injury exercise there is */
+  {id:'nordic', pat:'kflex', eq:['gym','db','bw'], n:'Nordic hamstring curl', nt:'Feet anchored, lower yourself as slowly as you can, catch yourself with your hands and push back up. Start with 2 sets of 3 and build. Expect soreness the first weeks.', tr:false, sets:2, per:'3 to 6 slow lowers'},
+  {id:'legcurl', pat:'kflex', eq:['gym'], n:'Seated leg curl', nt:'Seated beats lying: the hamstring is longer at the hip. Pause at the stretched top.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'slider', pat:'kflex', eq:['db','bw'], n:'Slider or towel leg curl', nt:'Bridge up, slide your heels out slowly, pull them back. Slow on the way out.', tr:false, sets:3, per:'8 to 12'},
+  /* single leg: the running-specific pattern */
+  {id:'bss', pat:'lunge', eq:['gym','db','bw'], n:'Bulgarian split squat', nt:'Weight is per dumbbell. Reps are each side. Front shin close to vertical, sink until the back knee is just off the floor.', tr:true, sets:3, lo:8, hi:10, inc:2},
   {id:'rlu', pat:'lunge', eq:['gym','db','bw'], n:'Reverse lunge', nt:'Step back, knee just off the floor, drive through the front heel. Reps are each side.', tr:true, sets:3, lo:8, hi:10, inc:2},
   {id:'stp', pat:'lunge', eq:['gym','db','bw'], n:'Step-up', nt:'Box at knee height. Push through the top foot, do not jump off the bottom one. Reps are each side.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'slsq', pat:'lunge', eq:['gym','db','bw'], n:'Single-leg squat to a box', nt:'Sit back to the box on one leg, stand up without rocking. Reps are each side.', tr:false, sets:3, per:'6 to 8 each side'},
-  /* horizontal push */
-  {id:'bb', pat:'hpush', eq:['gym'], n:'Barbell bench press', nt:'Feet planted, shoulder blades back, bar to mid chest.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
-  {id:'dbb', pat:'hpush', eq:['gym','db'], n:'Dumbbell bench press', nt:'Weight is per dumbbell. Lower under control, press without bouncing.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'mcp', pat:'hpush', eq:['gym'], n:'Machine chest press', nt:'Set the seat so the handles are level with your chest.', tr:true, sets:3, lo:8, hi:12, inc:5},
-  {id:'pu', pat:'hpush', eq:['gym','db','bw'], n:'Push-up', nt:'Body in one line. Raise your feet or add a pause to make it harder.', tr:false, sets:3, per:'10 to 15'},
+  {id:'slsq', pat:'lunge', eq:['gym','db','bw'], n:'Single-leg squat to a box', nt:'Sit back to the box on one leg, stand without rocking. Reps are each side.', tr:false, sets:3, per:'6 to 8 each side'},
+  /* plyometrics: low volume, done fresh, for running economy; skipped for calf or Achilles issues */
+  {id:'pogo', pat:'plyo', eq:['gym','db','bw'], n:'Pogo jumps', nt:'Stiff ankles, minimal knee bend, bounce like a spring with the shortest ground contact you can. Quiet landings. Stop before they get sloppy.', tr:false, sets:3, per:'15 bounces'},
+  {id:'drop', pat:'plyo', eq:['gym','db','bw'], n:'Drop jump', nt:'Step off a low box (20 to 30 cm), land and jump straight up as fast as you can. Quality over quantity: 3 sets of 5.', tr:false, sets:3, per:'5'},
+  {id:'bound', pat:'plyo', eq:['gym','db','bw'], n:'Single-leg hops', nt:'Hop forward on one leg, stick the landing for a second, repeat. Reps are each side.', tr:false, sets:3, per:'6 each side'},
+  /* horizontal push: dumbbells get a deeper stretch than a bar; machine is the high-SFR option */
+  {id:'dbb', pat:'hpush', eq:['gym','db'], n:'Dumbbell bench press', nt:'Weight is per dumbbell. Lower until you feel the stretch across your chest, press without bouncing.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'bb', pat:'hpush', eq:['gym'], n:'Barbell bench press', nt:'Feet planted, shoulder blades back, bar to mid chest. The strength option.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'mcp', pat:'hpush', eq:['gym'], n:'Machine chest press', nt:'Set the handles level with your chest and take them back far enough to feel a stretch.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'pu', pat:'hpush', eq:['gym','db','bw'], n:'Push-up', nt:'Hands on blocks or dumbbells so your chest goes below them. Raise your feet to make it harder.', tr:false, sets:3, per:'10 to 15'},
   /* incline push */
-  {id:'idb', pat:'hpush_inc', eq:['gym','db'], n:'Incline dumbbell press', nt:'Weight is per dumbbell. Bench at about 30 degrees, elbows 45 degrees from your body.', tr:true, sets:3, lo:8, hi:12, inc:2},
-  {id:'ipu', pat:'hpush_inc', eq:['bw'], n:'Feet-elevated push-up', nt:'Feet on a step or chair. Chest to the floor.', tr:false, sets:3, per:'8 to 12'},
-  /* horizontal pull */
-  {id:'dbr', pat:'hpull', eq:['gym','db'], n:'One-arm dumbbell row', nt:'Weight is one dumbbell. Reps are each side. Pull to your hip, not your shoulder.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'csr', pat:'hpull', eq:['gym'], n:'Chest-supported row', nt:'Chest on the pad so your lower back is out of it. Squeeze at the top.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
-  {id:'scr', pat:'hpull', eq:['gym'], n:'Seated cable row', nt:'Sit tall, pull to your stomach, let your shoulders reach forward at the start.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
-  {id:'bbr', pat:'hpull', eq:['gym'], n:'Barbell row', nt:'Hinge to about 45 degrees, bar to your lower ribs. No heaving.', tr:true, sets:3, lo:6, hi:8, inc:2.5},
+  {id:'idb', pat:'hpush_inc', eq:['gym','db'], n:'Incline dumbbell press', nt:'Weight is per dumbbell. Bench at about 30 degrees, lower deep, elbows about 45 degrees from your body.', tr:true, sets:3, lo:8, hi:12, inc:2},
+  {id:'ipu', pat:'hpush_inc', eq:['bw'], n:'Feet-elevated push-up', nt:'Feet on a step or chair. Chest all the way down.', tr:false, sets:3, per:'8 to 12'},
+  /* horizontal pull: supported rows first (the back works, your lower back does not), then cables, then free weights */
+  {id:'csr', pat:'hpull', eq:['gym'], n:'Chest-supported row', nt:'Chest on the pad, let the weight pull your shoulder blades forward at the bottom, then row to your ribs. The best row for most people.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'mrow', pat:'hpull', eq:['gym'], n:'Machine row', nt:'Reach fully at the start, elbows back past your body at the finish.', tr:true, sets:3, lo:8, hi:12, inc:5},
+  {id:'scr', pat:'hpull', eq:['gym'], n:'Seated cable row', nt:'Sit tall, let your shoulders reach forward at the start, pull to your stomach.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'sacr', pat:'hpull', eq:['gym'], n:'Single-arm cable row', nt:'Reps are each side. Let the arm reach across and forward at the start, pull to your hip. Big stretch, no cheating.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'dbr', pat:'hpull', eq:['gym','db'], n:'Chest-supported dumbbell row', nt:'Lie face down on an incline bench. Weight is per dumbbell. Let the dumbbells hang fully, row to your hips.', tr:true, sets:3, lo:8, hi:12, inc:2},
   {id:'inv', pat:'hpull', eq:['gym','db','bw'], n:'Inverted row', nt:'Under a bar or a sturdy table. Walk your feet forward to make it harder.', tr:false, sets:3, per:'8 to 12'},
   {id:'bndr', pat:'hpull', eq:['db'], n:'Band row', nt:'Anchor the band at chest height. Slow on the way back.', tr:false, sets:3, per:'12 to 15'},
   /* vertical push */
-  {id:'dbo', pat:'vpush', eq:['gym','db'], n:'Dumbbell shoulder press', nt:'Weight is per dumbbell. Ribs down, do not arch your back.', tr:true, sets:3, lo:8, hi:10, inc:2},
-  {id:'ohp', pat:'vpush', eq:['gym'], n:'Barbell overhead press', nt:'Squeeze your glutes so your back stays flat. Bar finishes over your mid foot.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
+  {id:'dbo', pat:'vpush', eq:['gym','db'], n:'Seated dumbbell shoulder press', nt:'Weight is per dumbbell. Lower until the dumbbells are level with your ears. Seated keeps your back out of it.', tr:true, sets:3, lo:8, hi:10, inc:2},
+  {id:'msp', pat:'vpush', eq:['gym'], n:'Machine shoulder press', nt:'Handles start around ear height. High stimulus, low cost.', tr:true, sets:3, lo:8, hi:12, inc:5},
   {id:'lmp', pat:'vpush', eq:['gym'], n:'Landmine press', nt:'Bar in a corner or landmine. Kind on cranky shoulders.', tr:true, sets:3, lo:8, hi:10, inc:2.5},
+  {id:'ohp', pat:'vpush', eq:['gym'], n:'Barbell overhead press', nt:'Squeeze your glutes so your back stays flat. The strength option.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
   {id:'pike', pat:'vpush', eq:['bw'], n:'Pike push-up', nt:'Hips high, head towards the floor between your hands.', tr:false, sets:3, per:'8 to 12'},
   /* vertical pull */
+  {id:'ld', pat:'vpull', eq:['gym'], n:'Lat pulldown', nt:'Let your arms reach fully at the top, pull to your upper chest with elbows down. Lean back a touch, no swinging.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
   {id:'plu', pat:'vpull', eq:['gym','bw'], n:'Pull-up', nt:'Full hang at the bottom, chin over the bar. Add weight when you can do 10.', tr:true, sets:3, lo:5, hi:8, inc:2.5},
-  {id:'ld', pat:'vpull', eq:['gym'], n:'Lat pulldown', nt:'Pull to your upper chest with elbows down. Keep the same grip each week.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
+  {id:'sapd', pat:'vpull', eq:['gym'], n:'Single-arm cable pulldown', nt:'Kneel or sit. Reps are each side. Reach up and across at the top, pull the elbow to your hip.', tr:true, sets:3, lo:8, hi:12, inc:2.5},
   {id:'apu', pat:'vpull', eq:['gym'], n:'Assisted pull-up', nt:'Log the assistance weight. Progress means less help, not more.', tr:true, sets:3, lo:6, hi:8, inc:2.5},
   {id:'bndp', pat:'vpull', eq:['db','bw'], n:'Band pulldown', nt:'Band over a door or bar. Pull to your chest, elbows down.', tr:false, sets:3, per:'12 to 15'},
-  /* core */
-  {id:'pal', pat:'core_anti', eq:['gym','db'], n:'Pallof press', nt:'Resist the cable or band pulling you round. Slow and square. Reps are each side.', tr:false, sets:2, per:'10 each side'},
-  {id:'scar', pat:'core_anti', eq:['gym','db'], n:'Suitcase carry', nt:'One heavy dumbbell, walk tall without leaning. Distance is each side.', tr:true, sets:2, lo:30, hi:40, inc:2, unit:'m'},
-  {id:'spl', pat:'core_anti', eq:['gym','db','bw'], n:'Side plank', nt:'A straight line from head to heel. Time is each side.', tr:false, sets:2, per:'30 to 45 s each side'},
-  {id:'db', pat:'core', eq:['gym','db','bw'], n:'Dead bug', nt:'Lower back flat to the floor the whole time. Reps are each side.', tr:false, sets:2, per:'8 to 10 each side'},
-  {id:'hkr', pat:'core', eq:['gym'], n:'Hanging knee raise', nt:'Control the swing. Curl your hips up, not just your knees.', tr:false, sets:3, per:'8 to 12'},
-  {id:'pl', pat:'core', eq:['gym','db','bw'], n:'Plank', nt:'Squeeze your glutes and push the floor away. Stop when your hips sag.', tr:false, sets:2, per:'45 to 60 s'},
-  {id:'bdog', pat:'core', eq:['gym','db','bw'], n:'Bird dog', nt:'Opposite arm and leg, hold two seconds, no twisting. Reps are each side.', tr:false, sets:2, per:'8 each side'},
-  /* hips (the running prehab that the evidence supports) */
-  {id:'lbw', pat:'hip', eq:['gym','db'], n:'Lateral band walk', nt:'Band above the knees, small steps, hips level, toes forward. Steps are each way.', tr:false, sets:2, per:'12 steps each way'},
-  {id:'slgb', pat:'hip', eq:['gym','db','bw'], n:'Single-leg glute bridge', nt:'Drive through the heel and keep your hips level at the top. Reps are each side.', tr:false, sets:3, per:'10 each side'},
-  {id:'clam', pat:'hip', eq:['gym','db','bw'], n:'Clamshell', nt:'Band above the knees if you have one. Open the top knee without rolling back. Reps are each side.', tr:false, sets:2, per:'15 each side'},
-  {id:'slr', pat:'hip', eq:['gym','db','bw'], n:'Side-lying leg raise', nt:'Toes pointing slightly down, lift from the hip. Reps are each side.', tr:false, sets:2, per:'15 each side'},
-  {id:'cop', pat:'hip', eq:['gym','db','bw'], n:'Copenhagen plank', nt:'Top foot on a bench, lift the bottom leg to meet it. Time is each side. Start on your knee.', tr:false, sets:2, per:'20 to 30 s each side'},
-  /* calves */
-  {id:'slcr', pat:'calf', eq:['gym','db','bw'], n:'Single-leg calf raise', nt:'Full range off a step, slow on the way down. Reps are each side.', tr:false, sets:3, per:'10 to 15 each side'},
-  {id:'scalf', pat:'calf', eq:['gym'], n:'Seated calf raise', nt:'Bent knee hits the deeper calf muscle that runners rely on.', tr:true, sets:3, lo:10, hi:15, inc:5},
+  /* trunk, loaded: rotation and anti-extension under real load, which a plank or Pallof press does not provide */
+  {id:'chop', pat:'core_anti', eq:['gym'], n:'Cable chop', nt:'High to low across your body, arms long, rotate from the hips and ribs together. Reps are each side.', tr:true, sets:3, lo:10, hi:12, inc:2.5},
+  {id:'lmrot', pat:'core_anti', eq:['gym'], n:'Landmine rotation', nt:'Bar at chest height, arms long, swing it in an arc from hip to hip. Control the turn. Reps are each side.', tr:true, sets:3, lo:8, hi:10, inc:2.5},
+  {id:'scar', pat:'core_anti', eq:['gym','db'], n:'Suitcase carry', nt:'One heavy dumbbell, walk tall without leaning. Heavy enough that it is hard to stay upright. Distance is each side.', tr:true, sets:2, lo:30, hi:40, inc:2, unit:'m'},
+  {id:'pal', pat:'core_anti', eq:['gym','db'], n:'Pallof press', nt:'The regression if chops or carries hurt your back. Resist the pull, slow and square. Reps are each side.', tr:false, sets:2, per:'10 each side'},
+  {id:'spl', pat:'core_anti', eq:['gym','db','bw'], n:'Side plank with leg lift', nt:'Straight line from head to heel, lift the top leg. Time is each side.', tr:false, sets:2, per:'30 to 45 s each side'},
+  {id:'roll', pat:'core', eq:['gym','db','bw'], n:'Ab wheel rollout', nt:'From your knees. Roll out as far as you can keep your back flat, pull back with your abs. Loads the trunk at long length.', tr:false, sets:3, per:'6 to 12'},
+  {id:'hkr', pat:'core', eq:['gym'], n:'Hanging knee raise', nt:'Control the swing. Curl your hips up, not just your knees. Straighten the legs to progress.', tr:false, sets:3, per:'8 to 12'},
+  {id:'ccr', pat:'core', eq:['gym'], n:'Cable crunch', nt:'Kneeling, rope behind your head, curl your ribs to your hips. Loadable, unlike floor crunches.', tr:true, sets:3, lo:10, hi:15, inc:2.5},
+  {id:'db', pat:'core', eq:['gym','db','bw'], n:'Dead bug', nt:'Lower back flat the whole time. Hold a weight overhead to progress. Reps are each side.', tr:false, sets:2, per:'8 to 10 each side'},
+  {id:'pl', pat:'core', eq:['gym','db','bw'], n:'Long-lever plank', nt:'Hands further forward than usual, glutes squeezed. Harder than it looks, and progressable.', tr:false, sets:2, per:'30 to 45 s'},
+  /* hips: loadable abduction first, band work as the fallback; Copenhagen for the adductors */
+  {id:'cabd', pat:'hip', eq:['gym'], n:'Cable or machine hip abduction', nt:'Standing cable at the ankle, or the seated machine. Reps are each side. Loadable, which is what band walks are not.', tr:true, sets:3, lo:10, hi:15, inc:2.5},
+  {id:'cop', pat:'hip', eq:['gym','db','bw'], n:'Copenhagen plank', nt:'Top leg on a bench, lift the bottom leg to meet it. Start on your knee. The adductor exercise that cuts groin injuries. Time is each side.', tr:false, sets:2, per:'20 to 30 s each side'},
+  {id:'slgb', pat:'hip', eq:['gym','db','bw'], n:'Single-leg hip thrust', nt:'Shoulders on a bench, one foot down, drive the hips up with the pelvis level. Weight on the hip to progress. Reps are each side.', tr:true, sets:3, lo:8, hi:12, inc:2},
+  {id:'lbw', pat:'hip', eq:['gym','db'], n:'Lateral band walk', nt:'Band above the knees, small steps, hips level, toes forward. Fine for warming the hips up; it does not load enough to grow them. Steps are each way.', tr:false, sets:2, per:'12 steps each way'},
+  {id:'slr', pat:'hip', eq:['gym','db','bw'], n:'Side-lying hip raise', nt:'Toes pointing slightly down, lift from the hip, pause at the top. Add ankle weight to progress. Reps are each side.', tr:false, sets:2, per:'15 each side'},
+  /* calves: bent-knee soleus work first (runners run on their soleus), standing with a long pause at the stretch */
+  {id:'scalf', pat:'calf', eq:['gym'], n:'Seated calf raise', nt:'Bent knee targets the soleus, the calf muscle running leans on. Deep stretch at the bottom, pause there.', tr:true, sets:3, lo:10, hi:15, inc:5},
+  {id:'slcr', pat:'calf', eq:['gym','db','bw'], n:'Single-leg calf raise', nt:'Off a step, dumbbell in hand. Two seconds down, pause at the bottom stretch. Reps are each side.', tr:true, sets:3, lo:10, hi:15, inc:2},
   {id:'ecc', pat:'calf', eq:['gym','db','bw'], n:'Eccentric heel drop', nt:'Up on both feet, down slowly on one. Mid-tendon Achilles issues only, and see a physio before starting.', tr:false, sets:3, per:'15 each side'},
-  /* arms and shoulders */
+  /* arms and shoulders: long-length options first */
+  {id:'ohe', pat:'tri', eq:['gym'], n:'Overhead cable triceps extension', nt:'Rope overhead, elbows by your ears, let it stretch at the bottom. The long head only gets worked overhead.', tr:true, sets:3, lo:10, hi:15, inc:2.5},
+  {id:'dbsc', pat:'tri', eq:['gym','db'], n:'Dumbbell skull crusher', nt:'Weight is per dumbbell. Lower to beside your ears, feel the stretch.', tr:true, sets:3, lo:10, hi:12, inc:1},
   {id:'tpd', pat:'tri', eq:['gym'], n:'Triceps pushdown', nt:'Elbows pinned to your sides.', tr:true, sets:3, lo:10, hi:15, inc:2.5},
-  {id:'dbsc', pat:'tri', eq:['gym','db'], n:'Dumbbell skull crusher', nt:'Weight is per dumbbell. Lower to beside your ears.', tr:true, sets:3, lo:10, hi:12, inc:1},
   {id:'dpu', pat:'tri', eq:['bw'], n:'Close-grip push-up', nt:'Hands under your shoulders, elbows brushing your ribs.', tr:false, sets:3, per:'8 to 12'},
+  {id:'icurl', pat:'bi', eq:['gym','db'], n:'Incline dumbbell curl', nt:'Weight is per dumbbell. Lie back on an incline bench so the arms hang behind you. Long length does the work.', tr:true, sets:3, lo:10, hi:12, inc:1},
+  {id:'ccurl', pat:'bi', eq:['gym'], n:'Cable curl', nt:'Constant tension through the whole rep. No swinging.', tr:true, sets:3, lo:10, hi:12, inc:2.5},
   {id:'curl', pat:'bi', eq:['gym','db'], n:'Dumbbell curl', nt:'Weight is per dumbbell. No swinging.', tr:true, sets:3, lo:10, hi:12, inc:1},
-  {id:'bcurl', pat:'bi', eq:['db','bw'], n:'Band curl', nt:'Stand on the band. Slow on the way down.', tr:false, sets:3, per:'12 to 15'},
   {id:'chin', pat:'bi', eq:['gym','bw'], n:'Chin-up', nt:'Palms facing you. Lower all the way.', tr:false, sets:3, per:'5 to 8'},
+  {id:'bcurl', pat:'bi', eq:['db','bw'], n:'Band curl', nt:'Stand on the band. Slow on the way down.', tr:false, sets:3, per:'12 to 15'},
+  {id:'clat', pat:'delt', eq:['gym'], n:'Cable lateral raise', nt:'Cable behind your body. Tension at the bottom, where dumbbells have none.', tr:true, sets:3, lo:12, hi:15, inc:2.5},
   {id:'lat', pat:'delt', eq:['gym','db'], n:'Lateral raise', nt:'Weight is per dumbbell. Lead with your elbows, stop at shoulder height.', tr:true, sets:3, lo:12, hi:15, inc:1},
   {id:'blat', pat:'delt', eq:['bw'], n:'Band lateral raise', nt:'Stand on the band. Pause at the top.', tr:false, sets:3, per:'15'},
+  {id:'rdf', pat:'rear', eq:['gym'], n:'Reverse pec deck', nt:'Arms almost straight, squeeze the shoulder blades, slow return.', tr:true, sets:3, lo:12, hi:15, inc:2.5},
   {id:'fp', pat:'rear', eq:['gym'], n:'Face pull', nt:'Rope to your forehead, elbows high. Light and strict.', tr:true, sets:3, lo:12, hi:15, inc:2.5},
-  {id:'bpa', pat:'rear', eq:['gym','db','bw'], n:'Band pull-apart', nt:'Arms straight, squeeze your shoulder blades. No band? Use a towel and pull it tight.', tr:false, sets:3, per:'15 to 20'},
+  {id:'bpa', pat:'rear', eq:['gym','db','bw'], n:'Band pull-apart', nt:'Arms straight, squeeze your shoulder blades. No band? Pull a towel tight.', tr:false, sets:3, per:'15 to 20'},
   /* mobility (specific restrictions only, kept short) */
   {id:'m90', pat:'mob_hip', eq:['gym','db','bw'], n:'90/90 hip switch', nt:'Both legs at right angles, rotate from one side to the other without using your hands.', tr:false, sets:2, per:'8 switches'},
   {id:'mcouch', pat:'mob_hipflex', eq:['gym','db','bw'], n:'Couch stretch', nt:'Back foot up against a wall, squeeze the glute on that side. Time is each side.', tr:false, sets:2, per:'45 s each side'},
@@ -314,33 +334,33 @@ const EXL = [
 ];
 const EXMAP = {};
 EXL.forEach(e => { EXMAP[e.id] = e; });
-const PATNAME = {squat:'Squat', hinge:'Hinge', lunge:'Single leg', hpush:'Horizontal push', hpush_inc:'Incline push', hpull:'Row', vpush:'Overhead press', vpull:'Pull-up or pulldown', core:'Core', core_anti:'Anti-rotation', hip:'Hips', calf:'Calves', tri:'Triceps', bi:'Biceps', delt:'Shoulders', rear:'Rear shoulders', mob_hip:'Hip mobility', mob_hipflex:'Hip flexors', mob_ankle:'Ankles', mob_tspine:'Upper back', mob_global:'Full body'};
+const PATNAME = {squat:'Squat', hinge:'Hinge', kflex:'Hamstring curl', plyo:'Plyometrics', lunge:'Single leg', hpush:'Horizontal push', hpush_inc:'Incline push', hpull:'Row', vpush:'Overhead press', vpull:'Pull-up or pulldown', core:'Core', core_anti:'Anti-rotation', hip:'Hips', calf:'Calves', tri:'Triceps', bi:'Biceps', delt:'Shoulders', rear:'Rear shoulders', mob_hip:'Hip mobility', mob_hipflex:'Hip flexors', mob_ankle:'Ankles', mob_tspine:'Upper back', mob_global:'Full body'};
 
 /* strength session templates: pattern slots, resolved to exercises by equipment and niggle.
    A slot like 'squat:2' takes the second-choice exercise for that pattern, so paired sessions
    (A and B) never share the same main lift. grp drives the spacing rule: sessions of the same
    group are never put on consecutive days. */
 const SS = {
-  FBA:{name:'Full body A', sub:'Squat and press', grp:'full', lower:true, min:45, slots:['squat','hpush','hpull','hip','core_anti']},
-  FBB:{name:'Full body B', sub:'Hinge and pull', grp:'full', lower:true, min:45, slots:['hinge','vpush','vpull','hip','core']},
-  FBC:{name:'Full body C', sub:'Single leg and incline', grp:'full', lower:true, min:45, slots:['lunge','hpush_inc','hpull:2','calf','core_anti']},
+  FBA:{name:'Full body A', sub:'Squat and press', grp:'full', lower:true, min:50, slots:['plyo','squat','hpush','hpull','hip','core_anti']},
+  FBB:{name:'Full body B', sub:'Hinge and pull', grp:'full', lower:true, min:50, slots:['hinge','kflex','vpush','vpull','hip:2','core']},
+  FBC:{name:'Full body C', sub:'Single leg and incline', grp:'full', lower:true, min:45, slots:['lunge','hpush_inc','hpull:2','calf','core_anti:2']},
   UPA:{name:'Upper A', sub:'Press biased, easy on the legs', grp:'upper', lower:false, min:40, slots:['hpush','hpull','vpush','tri','core_anti']},
   UPB:{name:'Upper B', sub:'Pull biased, easy on the legs', grp:'upper', lower:false, min:40, slots:['vpull','hpush_inc','hpull:2','bi','rear']},
-  LOA:{name:'Lower A', sub:'Squat biased', grp:'lower', lower:true, min:45, slots:['squat','lunge','hinge:2','hip','calf']},
-  LOB:{name:'Lower B', sub:'Hinge biased', grp:'lower', lower:true, min:45, slots:['hinge','lunge:2','squat:2','hip','core']},
+  LOA:{name:'Lower A', sub:'Squat biased', grp:'lower', lower:true, min:50, slots:['plyo','squat','lunge','hinge:2','hip','calf']},
+  LOB:{name:'Lower B', sub:'Hinge biased', grp:'lower', lower:true, min:50, slots:['hinge','kflex','lunge:2','squat:2','hip:2','core']},
   PUSHA:{name:'Push A', sub:'Chest, shoulders and triceps', grp:'push', lower:false, min:40, slots:['hpush','vpush','hpush_inc','delt','tri']},
-  PUSHB:{name:'Push B', sub:'Dumbbell biased pressing', grp:'push', lower:false, min:40, slots:['hpush:2','vpush:2','hpush_inc','tri:2','core_anti']},
+  PUSHB:{name:'Push B', sub:'Machine and dumbbell pressing', grp:'push', lower:false, min:40, slots:['hpush:2','vpush:2','hpush_inc','tri:2','core_anti']},
   PULLA:{name:'Pull A', sub:'Back and biceps', grp:'pull', lower:false, min:40, slots:['vpull','hpull','rear','bi','core']},
   PULLB:{name:'Pull B', sub:'Row biased back work', grp:'pull', lower:false, min:40, slots:['vpull:2','hpull:2','hpull:3','rear:2','bi:2']},
-  CORE:{name:'Hips and core', sub:'Runner prehab, 25 minutes', grp:'core', lower:false, min:25, slots:['hip','core_anti','core','calf']},
+  CORE:{name:'Hips and core', sub:'Runner prehab, 25 minutes', grp:'core', lower:false, min:25, slots:['hip','hip:2','core_anti','core','calf']},
   MOB:{name:'Mobility', sub:'20 minutes for stiff hips and ankles', grp:'core', lower:false, min:20, slots:['mob_hip','mob_hipflex','mob_ankle','mob_tspine','mob_global']}
 };
 const SPLIT = {0:[], 1:['FBA'], 2:['FBA','FBB'], 3:['FBA','FBB','FBC'], 4:['UPA','LOA','UPB','LOB'], 5:['UPA','LOA','UPB','LOB','CORE'], 6:['PUSHA','PULLA','LOA','PUSHB','PULLB','LOB'], 7:['PUSHA','PULLA','LOA','PUSHB','PULLB','LOB','CORE']};
 /* groups that must not sit on consecutive days (same muscles need about 48 hours) */
 const CLASH = {lower:['lower','full'], full:['lower','full','upper','push','pull'], upper:['upper','full','push','pull'], push:['push','full','upper'], pull:['pull','full','upper'], core:[]};
 /* exercises a niggle prefers in a slot, if the equipment allows */
-const NIGGLE_PREF = {itb:{hip:'lbw', calf:'slcr', core:'spl'}, calf:{calf:'ecc', hip:'slgb'}, none:{}};
-const NIGGLE_AVOID = {itb:[], calf:['stp'], none:[]};
+const NIGGLE_PREF = {itb:{hip:'cabd', core_anti:'spl'}, calf:{calf:'ecc'}, none:{}};
+const NIGGLE_AVOID = {itb:['drop','bound'], calf:['stp','pogo','drop','bound','m200'], none:[]};
 
 /* ============ quality session library ============ */
 const FAM = {
@@ -349,33 +369,59 @@ const FAM = {
   spd:{name:'Speed and hills', blurb:'Economy and leg strength'},
   mix:{name:'Mixed', blurb:'Variety, less structured'}
 };
+/* cap: which weekly-volume cap applies to the main set (thr 10 percent, vo2 8 percent or 10 km, r 5 percent or 5 km) */
 const Q = [
-  {id:'tempo', name:'Tempo run', fam:'thr', kind:'cont', pace:'thr', lv:[15,20,25,30,35,40], gentle:true,
+  {id:'tempo', name:'Tempo run', fam:'thr', cap:'thr', kind:'cont', pace:'thr', lv:[15,20,25,30,35,40], gentle:true,
    tip:'Comfortably hard. You can say a few words, not a sentence. If you are gasping, you are over pace.'},
-  {id:'cruise', name:'Threshold 1 km repeats', fam:'thr', kind:'rep', pace:'thr', dist:1000, lv:[4,5,6,7,8], rec:60, recHow:'easy jog, do not stop',
+  {id:'cruise', name:'Threshold 1 km repeats', fam:'thr', cap:'thr', kind:'rep', pace:'thr', dist:1000, lv:[4,5,6,7,8], rec:60, recHow:'easy jog, do not stop',
    tip:'The jog is part of the session. The last rep should feel like the first.'},
-  {id:'cruiset', name:'Cruise intervals', fam:'thr', kind:'time', pace:'thr', lv:[[4,5],[5,5],[3,8],[3,10],[2,15]], recs:[60,60,90,90,120], recHow:'easy jog, do not stop', gentle:true,
+  {id:'cruise2k', name:'Threshold 2 km repeats', fam:'thr', cap:'thr', kind:'rep', pace:'thr', dist:2000, lv:[3,4,5], rec:90, recHow:'easy jog, do not stop',
+   tip:'Longer reps, same controlled effort. If you are walking the recovery the pace is too hot.'},
+  {id:'cruiset', name:'Cruise intervals', fam:'thr', cap:'thr', kind:'time', pace:'thr', lv:[[4,5],[5,5],[3,8],[3,10],[2,15]], recs:[60,60,90,90,120], recHow:'easy jog, do not stop', gentle:true,
    tip:'Same effort as a tempo run, broken up so it costs your legs less.'},
-  {id:'km', name:'1 km repeats', fam:'vo2', kind:'rep', pace:'i', dist:1000, lv:[3,4,5,6], rec:180, recHow:'easy jog or walk',
+  {id:'km', name:'1 km repeats', fam:'vo2', cap:'vo2', kind:'rep', pace:'i', dist:1000, lv:[3,4,5,6], rec:180, recHow:'easy jog or walk',
    tip:'Hard but repeatable. If rep times drift more than 5 s slower, stop the session early.'},
-  {id:'m800', name:'800 m repeats', fam:'vo2', kind:'rep', pace:'i', dist:800, lv:[4,5,6,7,8], rec:150, recHow:'easy jog',
+  {id:'k1200', name:'1200 m repeats', fam:'vo2', cap:'vo2', kind:'rep', pace:'i', dist:1200, lv:[3,4,5], rec:210, recHow:'easy jog',
+   tip:'Each rep is long enough to reach full oxygen uptake. Settle into the pace in the first 200 m.'},
+  {id:'m800', name:'800 m repeats', fam:'vo2', cap:'vo2', kind:'rep', pace:'i', dist:800, lv:[4,5,6,7,8], rec:150, recHow:'easy jog',
    tip:'Hard but repeatable. Keep every rep within 5 s of the first.'},
-  {id:'f4', name:'4 minute intervals', fam:'vo2', kind:'time', pace:'f4', lv:[[3,4],[4,4],[5,4]], rec:180, recHow:'easy jog',
+  {id:'f4', name:'4 minute intervals', fam:'vo2', cap:'vo2', kind:'time', pace:'f4', lv:[[3,4],[4,4],[5,4]], rec:180, recHow:'easy jog',
    tip:'About 8 out of 10 effort. Finish the last rep as strong as the first.'},
-  {id:'thirty', name:'30 seconds on, 30 off', fam:'vo2', kind:'alt', pace:'i', lv:[10,14,18,22,26], gentle:true,
+  {id:'thirty', name:'30 seconds on, 30 off', fam:'vo2', cap:'vo2', kind:'alt', pace:'i', lv:[10,14,18,22,26], gentle:true,
    tip:'Short and sharp. Controlled, not a sprint. It is easy to start too fast.'},
-  {id:'m400', name:'400 m repeats', fam:'spd', kind:'rep', pace:'r', dist:400, lv:[6,8,10,12], rec:180, recHow:'walk or very easy jog, full recovery', caution:['calf'],
+  {id:'m200', name:'200 m repeats', fam:'spd', cap:'r', kind:'rep', pace:'r', dist:200, lv:[8,10,12,14], rec:90, recHow:'walk back, full recovery', caution:['calf'],
+   tip:'Fast and relaxed, never straining. This is about mechanics, not fitness.'},
+  {id:'m400', name:'400 m repeats', fam:'spd', cap:'r', kind:'rep', pace:'r', dist:400, lv:[6,8,10,12], rec:180, recHow:'walk or very easy jog, full recovery', caution:['calf'],
    tip:'Fast and relaxed. Full recovery matters here. Stop if your form falls apart.'},
-  {id:'hsprint', name:'Hill sprints', fam:'spd', kind:'hsprint', lv:[[8,10],[10,10],[10,12],[12,12],[12,15]], caution:['calf'],
+  {id:'m600', name:'600 m repeats', fam:'spd', cap:'r', kind:'rep', pace:'r', dist:600, lv:[4,5,6], rec:210, recHow:'walk or very easy jog, full recovery', caution:['calf'],
+   tip:'Long enough to hurt, short enough to stay quick. Do not do these on tired legs.'},
+  {id:'hsprint', name:'Hill sprints', fam:'spd', cap:'none', kind:'hsprint', lv:[[8,10],[10,10],[10,12],[12,12],[12,15]], caution:['calf'],
    tip:'Near all-out but smooth. The hill limits the speed, which keeps it safe. Walk all the way back down.'},
-  {id:'hrep', name:'Hill repeats', fam:'spd', kind:'hrep', lv:[[6,60],[7,60],[6,90],[8,90],[8,120]], caution:['itb','calf'],
+  {id:'hrep', name:'Hill repeats', fam:'spd', cap:'vo2', kind:'hrep', lv:[[6,60],[7,60],[6,90],[8,90],[8,120]], caution:['itb','calf'],
    tip:'Strong and steady up the hill, about 5K effort. Jog down gently; if your knee complains on the descent, walk it.'},
-  {id:'fart', name:'Fartlek', fam:'mix', kind:'fart', gentle:true,
+  {id:'kenyan', name:'Long hill intervals', fam:'spd', cap:'thr', kind:'khill', lv:[[3,4],[4,4],[4,5],[5,5]], rec:120, caution:['itb'],
+   tip:'Threshold effort up a long steady climb. Hard aerobic work with less impact than the flat.'},
+  {id:'fart', name:'Fartlek', fam:'mix', cap:'vo2', kind:'fart', gentle:true,
    lv:[{t:'8 x 1 min hard, 1 min easy', m:16}, {t:'10 x 1 min hard, 1 min easy', m:20}, {t:'5 x 3 min hard, 2 min easy', m:25}, {t:'6 x 3 min hard, 2 min easy', m:30}, {t:'Mona fartlek: 2 x 90 s, 4 x 60 s, 4 x 30 s, 4 x 15 s, each with an equal easy float', m:20}],
    tip:'Hard means breathing hard but in control, about 7 to 8 out of 10. The easy part is a slow jog.'},
-  {id:'prog', name:'Progression run', fam:'mix', kind:'prog', lv:[30,35,40,45,50], gentle:true,
-   tip:'Start easy and finish strong. If the last third is a struggle, you started too fast.'}
+  {id:'prog', name:'Progression run', fam:'mix', cap:'thr', kind:'prog', lv:[30,35,40,45,50], gentle:true,
+   tip:'Start easy and finish strong. If the last third is a struggle, you started too fast.'},
+  {id:'stridesq', name:'Strides session', fam:'mix', cap:'none', kind:'strides', lv:[6,8,10], gentle:true,
+   tip:'The lightest quality session there is. Smooth, fast, relaxed, with a full walk back. Good for a tired week.'}
 ];
+/* how much each family is favoured for each goal; 0 means not suggested (still available to pick) */
+const GOALMIX = {fitness:{thr:2, vo2:1, spd:1, mix:2}, '5k10k':{thr:2, vo2:3, spd:2, mix:1}, half:{thr:3, vo2:1, spd:1, mix:1}, marathon:{thr:2, vo2:0, spd:1, mix:1}};
+const GOALNAME = {fitness:'General fitness', '5k10k':'5K or 10K', half:'Half marathon', marathon:'Marathon'};
+/* long run variants: which goals use them and how often a structured long run comes round */
+const LRV = {
+  easy:{name:'Long run', sub:'easy'},
+  prog:{name:'Progressive long run', sub:'easy to threshold'},
+  fast:{name:'Fast-finish long run', sub:'final quarter at race pace'},
+  mp:{name:'Long run with marathon-pace blocks', sub:'easy with blocks at marathon pace'}
+};
+const LRROT = {fitness:['prog'], '5k10k':['prog'], half:['prog','fast'], marathon:['mp','fast','prog']};
+const LRPERIOD = {fitness:3, '5k10k':2, half:2, marathon:2};
+const MP_LADDER = [16, 20, 30, 40];
 const qById = id => Q.find(q => q.id === id);
 
 /* ============ helpers ============ */
@@ -407,10 +453,10 @@ const uid = p => p + '-' + (++uidN) + '-' + Math.random().toString(36).slice(2, 
 /* ============ state ============ */
 const fresh = () => ({
   v:2,
-  profile:{setup:false, focus:'both', runDays:4, strengthDays:2, fiveK:null, longMin:60, longCap:120, buildWeeks:3, equipment:'gym', niggle:'none', freeDay:'MON', testWeek:1, startedLong:60},
+  profile:{setup:false, focus:'both', goal:'fitness', age:null, runDays:4, strengthDays:2, fiveK:null, longMin:60, longCap:120, buildWeeks:3, equipment:'gym', niggle:'none', freeDay:'MON', testWeek:1, startedLong:60, hrMode:'none', watch:'other', hrCap:null, mhr:null, rhr:null, secondQ:false},
   template:[],                       /* the week plan: [{id, type, day, key (strength), strides}] */
-  week:{no:1, kind:'build', pos:1, level:0, resume:1, start:'', done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}},
-  levels:{}, qLast:{}, lifts:{}, swaps:{}, history:[], tab:'week'
+  week:{no:1, kind:'build', pos:1, level:0, resume:1, start:'', done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}, lrv:'easy', q2off:false},
+  levels:{}, qLast:{}, lifts:{}, swaps:{}, history:[], tab:'week', lrSeq:0, lrStruct:0, lrLastStructured:0, mpLevel:0, qfb:[], easyLog:[], forceDeload:false, q2pauseUntil:0
 });
 const merge = (base, o) => {
   Object.keys(o).forEach(k => {
@@ -437,7 +483,7 @@ let pushTimer = null;
 let cloudReady = false;     /* nothing is pushed until the first cloud check has finished */
 let pendingCloud = null;    /* set while two different plans exist and the person has not chosen */
 const normKey = v => String(v || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
-const SYNCTXT = {local:'This phone only', syncing:'Saving', ok:'Synced', fail:'Not saved to cloud'};
+const SYNCTXT = {local:'Phone only', syncing:'Saving', ok:'Synced', fail:'Not saved'};
 const setSync = st => { const el = document.getElementById('sync'); if (!el) return; el.className = 'sync ' + st; const sp = el.querySelector('span'); if (sp) sp.textContent = SYNCTXT[st]; };
 const pushCloud = () => {
   const k = syncKey();
@@ -474,9 +520,12 @@ const hasPaces = () => !!S.profile.fiveK;
 const P = () => {
   if (!hasPaces()) return null;
   const vd = vdotOf(S.profile.fiveK), i = paceAt(vd, 0.975);
-  return {vd:vd, easy:paceAt(vd, 0.70), thr:paceAt(vd, 0.88), f4:paceAt(vd, 0.95), i:i, r:i/1.05};
+  return {vd:vd, easy:paceAt(vd, 0.70), thr:paceAt(vd, 0.88), f4:paceAt(vd, 0.95), i:i, r:i/1.05, mp:paceAt(vd, 0.83), hm:paceAt(vd, 0.86)};
 };
-const EFFORT = {easy:'easy, full sentences', thr:'comfortably hard, a few words at a time', f4:'hard, about 8 out of 10', i:'hard, just quicker than 5K effort', r:'fast and relaxed, about mile effort'};
+const EFFORT = {easy:'easy, full sentences', thr:'comfortably hard, a few words at a time', f4:'hard, about 8 out of 10', i:'hard, just quicker than 5K effort', r:'fast and relaxed, about mile effort', mp:'marathon effort, steady and controlled, short sentences', hm:'half marathon effort, brisk but sustainable'};
+const ASSUMED = {easy:390, thr:330, f4:310, i:300, r:285, mp:350, hm:340};
+const paceOrAssumed = k => { const p = paceOf(k); return p || ASSUMED[k]; };
+const masters = () => !!(S.profile.age && S.profile.age >= 50);
 const paceOf = k => { const p = P(); return p ? (p[k] || p.i) : null; };
 const pn = k => { const p = paceOf(k); return p ? fmtPace(p) + '/km' : EFFORT[k]; };
 const beginner = () => S.profile.longMin < 30 || (S.profile.fiveK && S.profile.fiveK > 35*60);
@@ -496,8 +545,7 @@ const vol = (level, deload) => {
 };
 
 /* ============ week generator ============ */
-const RUN_ROLES = {0:[], 1:['L'], 2:['Q','L'], 3:['E1','Q','L'], 4:['E1','Q','E2','L'], 5:['E1','Q','E2','E3','L'], 6:['E1','Q','E2','E3','E4','L'], 7:['E1','Q','E2','E3','Q2','E4','E5','L'].slice(0,7)};
-RUN_ROLES[7] = ['E1','Q','E2','E3','Q2','E4','L'];
+const RUN_ROLES = {0:[], 1:['L'], 2:['Q','L'], 3:['E1','Q','L'], 4:['E1','Q','E2','L'], 5:['E1','Q','E2','E3','L'], 6:['E1','Q','E2','E3','E4','L'], 7:['E1','Q','E2','E3','E4','E5','L']};
 const roleType = r => r[0] === 'E' ? 'easy' : r === 'L' ? 'long' : 'quality';
 const genTemplate = p => {
   const used = {}, out = [];
@@ -506,14 +554,22 @@ const genTemplate = p => {
     for (let i = 0; i < DAYS.length; i++) { const d = DAYS[i]; if (!used[d] && (allowFree || d !== p.freeDay)) return d; }
     return null;
   };
-  const n = clamp(p.runDays, 0, 7), roles = RUN_ROLES[n];
+  const n = clamp(p.runDays, 0, 7), roles = RUN_ROLES[n].slice();
+  const wantQ2 = p.secondQ && n >= 4 && q2Earned(p).ok;
+  if (wantQ2) roles[roles.lastIndexOf(roles.filter(r => r[0] === 'E').pop())] = 'Q2';
   const prefs = {
     L:['SUN','SAT','FRI'],
     Q:n >= 5 ? ['WED','THU','TUE'] : ['THU','WED','TUE'],
     Q2:['FRI','TUE','SAT','MON'],
     E:['TUE','SAT','FRI','MON','WED','THU','SUN']
   };
-  ['L','Q','Q2'].forEach(r => { if (roles.indexOf(r) >= 0) { const d = take(prefs[r], n === 7); used[d] = r; } });
+  ['L','Q'].forEach(r => { if (roles.indexOf(r) >= 0) { const d = take(prefs[r], n === 7); used[d] = r; } });
+  if (roles.indexOf('Q2') >= 0) {
+    const dQ = Object.keys(used).find(d => used[d] === 'Q'), dL = Object.keys(used).find(d => used[d] === 'L');
+    const gap = (a, b) => { const x = (DAYS.indexOf(b) - DAYS.indexOf(a) + 7) % 7; return Math.min(x, 7 - x); };
+    const okDays = prefs.Q2.concat(DAYS).filter(d => !used[d] && (d !== p.freeDay || n === 7) && (!dQ || gap(dQ, d) >= 2) && (!dL || gap(dL, d) >= 2));
+    if (okDays.length) used[okDays[0]] = 'Q2';
+  }
   roles.filter(r => r[0] === 'E').forEach(r => { const d = take(prefs.E, n === 7); used[d] = r; });
   Object.keys(used).forEach(d => out.push({id:uid('r'), type:roleType(used[d]), day:d, role:used[d], strides:false}));
   /* strides on the easy run before the long run, and on one more if there are three or more easy runs */
@@ -586,8 +642,8 @@ const e1rm = (w, r) => r === 1 ? w : w*(1 + r/30);
 
 /* ============ quality builder ============ */
 const buildQ = (q, lvl, dl) => {
-  const L = Math.min(lvl, q.lv.length - 1), v = q.lv[L], k = dl ? 0.6 : 1, p = P();
-  const o = {warm:'2 km easy jogging', cool:'1.5 km easy jogging', prep:null, lines:[], summary:'', main:20, level:L, top:L >= q.lv.length - 1};
+  const cl = capLevel(q), L = Math.max(0, Math.min(lvl, q.lv.length - 1, cl)), v = q.lv[L], k = dl ? 0.6 : 1, p = P();
+  const o = {warm:'2 km easy jogging', cool:'1.5 km easy jogging', prep:null, lines:[], summary:'', main:20, level:L, top:L >= q.lv.length - 1, capped:Math.min(lvl, q.lv.length - 1) > cl};
   if (q.pace === 'i' || q.pace === 'r' || q.pace === 'f4' || q.kind === 'hsprint') o.prep = '4 x 20 s strides to open up, walking back between';
   const per = d => p ? ', about ' + fmtTime(paceOf(q.pace)*d/1000) + ' per rep' : '';
   if (q.kind === 'cont') {
@@ -609,22 +665,86 @@ const buildQ = (q, lvl, dl) => {
     o.lines.push(n + ' x ' + v[1] + ' s uphill at about 5K effort'); o.lines.push('Recovery: jog back down');
   } else if (q.kind === 'fart') {
     o.main = v.m; o.summary = v.t.length > 34 ? 'Mona fartlek' : v.t; o.lines.push(v.t); o.lines.push('Hard is about 10K to 5K effort. The easy part is a slow jog, not a walk.');
+  } else if (q.kind === 'khill') {
+    const n = dl ? Math.max(2, Math.round(v[0]*k)) : v[0], m = v[1]; o.main = Math.round(n*(m + q.rec/60)); o.summary = n + ' x ' + m + ' min uphill at threshold effort';
+    o.lines.push(n + ' x ' + m + ' min up a long, steady climb at threshold effort (' + EFFORT.thr + ')'); o.lines.push('Recovery: jog back down, about ' + recTxt(q.rec));
+  } else if (q.kind === 'strides') {
+    o.warm = '20 min easy running'; o.cool = '5 min easy jogging'; o.main = Math.round(v*1.2); o.summary = '20 min easy, then ' + v + ' x 20 s strides';
+    o.lines.push(v + ' x 20 s strides, building to fast and relaxed, never a sprint'); o.lines.push('Recovery: walk all the way back between each');
   } else if (q.kind === 'prog') {
     const m = dl ? Math.max(20, r5(v*k)) : v, t = Math.round(m/3); o.main = m; o.summary = m + ' min, easy to threshold';
     o.lines.push(t + ' min easy' + (p ? ' (slower than ' + fmtPace(p.easy) + '/km)' : '')); o.lines.push(t + ' min steady, a gear up but still comfortable'); o.lines.push((m - 2*t) + ' min at threshold, ' + pn('thr'));
   }
   return o;
 };
-const qPool = () => Q.filter(q => !beginner() || q.gentle);
+/* main-set kilometres of a rung, for the weekly-volume caps */
+const kmOfRung = (q, L) => {
+  const v = q.lv[Math.min(L, q.lv.length - 1)];
+  if (q.kind === 'cont') return v*60/paceOrAssumed(q.pace);
+  if (q.kind === 'rep') return v*q.dist/1000;
+  if (q.kind === 'time') return v[0]*v[1]*60/paceOrAssumed(q.pace);
+  if (q.kind === 'alt') return v*30/paceOrAssumed(q.pace);
+  if (q.kind === 'hrep') return v[0]*v[1]/paceOrAssumed('i');
+  if (q.kind === 'khill') return v[0]*v[1]*60/paceOrAssumed('thr');
+  if (q.kind === 'fart') return (v.m/2)*60/paceOrAssumed('i');
+  if (q.kind === 'prog') return (v - 2*Math.round(v/3))*60/paceOrAssumed('thr');
+  return 0;
+};
+const weeklyKm = () => { /* planned running this week, in kilometres */
+  const w = S.week, v = vol(w.level, w.kind === 'deload'), ep = paceOrAssumed('easy') + 30;
+  let min = 0, km = 0;
+  tpl().forEach(x => {
+    if (x.type === 'easy') min += v[x.role] || v.E2;
+    else if (x.type === 'long') min += v.L;
+    else if (x.type === 'quality') { const q = qById(w.picks[x.id]); min += 23; km += q ? kmOfRung(q, Math.min(S.levels[q.id] || 0, q.lv.length - 1)) : 4; }
+  });
+  return Math.round(min*60/ep + km);
+};
+const capFor = q => { const km = weeklyKm(); if (q.cap === 'thr') return Math.max(4, 0.10*km); if (q.cap === 'vo2') return Math.max(3.2, Math.min(10, 0.08*km)); if (q.cap === 'r') return Math.max(2.4, Math.min(5, 0.05*km)); return Infinity; };
+const capLevel = q => { const c = capFor(q); let best = -1; for (let L = 0; L < q.lv.length; L++) if (kmOfRung(q, L) <= c + 0.05) best = L; return best; };
+const qPool = () => Q.filter(q => (!beginner() || q.gentle) && capLevel(q) >= 0);
 const suggestQ = exclude => {
   const dl = S.week.kind === 'deload', pool = qPool().filter(q => (!dl || q.gentle) && (exclude || []).indexOf(q.id) < 0);
-  const lastFam = S.qLast.__fam;
-  let best = pool[0], bw = Infinity;
-  pool.forEach(q => { const w = (S.qLast[q.id] === undefined ? -1 : S.qLast[q.id]) + (q.fam === lastFam ? 0.5 : 0) + ((q.caution || []).indexOf(S.profile.niggle) >= 0 ? 2 : 0); if (w < bw) { bw = w; best = q; } });
+  const lastFam = S.qLast.__fam, mix = GOALMIX[S.profile.goal] || GOALMIX.fitness, exFam = (exclude || []).map(id => (qById(id) || {}).fam);
+  let best = null, bs = -Infinity;
+  pool.forEach(q => {
+    const wt = mix[q.fam] || 0; if (!wt) return;
+    const recency = S.qLast[q.id] === undefined ? 12 : Math.min(12, S.week.no - S.qLast[q.id]);
+    const famRec = S.qLast['__f_' + q.fam] === undefined ? 6 : Math.min(6, S.week.no - S.qLast['__f_' + q.fam]);
+    const sc = recency + famRec + wt*2 - (q.fam === lastFam ? 3 : 0) - (exFam.indexOf(q.fam) >= 0 ? 4 : 0) - ((q.caution || []).indexOf(S.profile.niggle) >= 0 ? 4 : 0);
+    if (sc > bs) { bs = sc; best = q; }
+  });
+  if (!best) best = pool[0];
   return best ? best.id : null;
 };
+const qualitySlots = () => tpl().filter(s => s.type === 'quality');
+const isQ2 = s => { const qs = qualitySlots(); return qs.length > 1 && qs[qs.length - 1].id === s.id; };
+const planLong = () => { /* decide this week's long run once, at week start */
+  const w = S.week, p = S.profile;
+  if (w.lrPlanned === w.no) return;
+  w.lrPlanned = w.no; w.lrv = 'easy';
+  const L = vol(w.level, w.kind === 'deload').L, hasLong = S.template.some(s => s.type === 'long');
+  if (!hasLong || w.kind === 'deload' || beginner() || L < 60 || S.lrLastStructured === w.no - 1) return;
+  const period = LRPERIOD[p.goal] || 3, rot = LRROT[p.goal] || ['prog'];
+  S.lrSeq = (S.lrSeq || 0) + 1;
+  if (S.lrSeq % period === 0) { w.lrv = rot[(S.lrStruct || 0) % rot.length]; S.lrStruct = (S.lrStruct || 0) + 1; S.lrLastStructured = w.no; }
+};
+const syncQ2 = () => { /* keep the second quality slot in step with the gate, without rebuilding the week */
+  const p = S.profile, qs = qualitySlots(), want = p.secondQ && p.runDays >= 4 && q2Earned(p).ok;
+  if (want && qs.length < 2) {
+    const Q1 = qs[0], L = S.template.find(s => s.type === 'long');
+    const gap = (a, b) => { const x = (DAYS.indexOf(b) - DAYS.indexOf(a) + 7) % 7; return Math.min(x, 7 - x); };
+    const cand = S.template.filter(s => s.type === 'easy' && (!Q1 || gap(Q1.day, s.day) >= 2) && (!L || gap(L.day, s.day) >= 2)).sort((a, b) => DAYS.indexOf(b.day) - DAYS.indexOf(a.day));
+    if (cand.length) { cand[0].type = 'quality'; cand[0].strides = false; cand[0].auto2 = true; }
+  } else if (!want) {
+    const q2 = qs.find(x => x.auto2);   /* only ever retire a slot the gate created, never one the person added */
+    if (q2 && qs.length > 1) { q2.type = 'easy'; q2.role = q2.role || 'E2'; delete q2.auto2; delete S.week.picks[q2.id]; delete S.week.auto[q2.id]; }
+  }
+};
 const autoPick = () => { /* fill every quality slot with a suggestion for this week */
+  syncQ2(); planLong();
   const w = S.week, picked = [];
+  w.q2off = w.lrv !== 'easy';
   tpl().filter(s => s.type === 'quality').forEach(s => {
     if (!w.picks[s.id] || !qById(w.picks[s.id])) { const id = suggestQ(picked); if (id) { w.picks[s.id] = id; w.auto[s.id] = true; } }
     picked.push(w.picks[s.id]);
@@ -634,9 +754,11 @@ const autoPick = () => { /* fill every quality slot with a suggestion for this w
 /* ============ session info for cards ============ */
 const sessInfo = s => {
   const w = S.week, dl = w.kind === 'deload', v = vol(w.level, dl), p = P();
-  if (s.type === 'easy') { const m = v[s.role] || v.E2; return {t:'Easy run', s:m + ' min' + (p ? ', slower than ' + fmtPace(p.easy) + '/km' : ', easy effort') + (s.strides ? ', plus strides' : ''), c:'easy', min:m}; }
-  if (s.type === 'long') return {t:'Long run', s:v.L + ' min easy' + (v.capped && !dl ? ', at your ceiling' : ''), c:'long', min:v.L};
+  const capTxt = easyCap() ? ', under ' + easyCap() + ' bpm' : (p ? ', slower than ' + fmtPace(p.easy) + '/km' : ', easy effort');
+  if (s.type === 'easy') { const m = v[s.role] || v.E2; return {t:'Easy run', s:m + ' min' + capTxt + (s.strides ? ', plus strides' : ''), c:'easy', min:m}; }
+  if (s.type === 'long') { const lv = LRV[w.lrv] || LRV.easy; return {t:lv.name, s:v.L + ' min, ' + (w.lrv === 'easy' ? 'easy' + (easyCap() ? ', under ' + easyCap() + ' bpm' : '') + (v.capped && !dl ? ', at your ceiling' : '') : lv.sub), c:'long', min:v.L, hard:w.lrv !== 'easy'}; }
   if (s.type === 'quality') {
+    if (w.q2off && isQ2(s)) { const m = v.E2; return {t:'Easy run with strides', s:m + ' min' + capTxt + '. The long run is this week\u2019s second hard session', c:'easy', min:m, q2off:true}; }
     const q = qById(w.picks[s.id]);
     if (!q) return {t:'Quality run', s:'Tap to choose a session', c:'quality', min:45, choose:true};
     const b = buildQ(q, S.levels[q.id] || 0, dl);
@@ -656,6 +778,8 @@ const weekWarnings = () => { /* day -> note, for clashes the user has created by
       else if (SS[x.key].lower && (byDay[nextDay(d)] || []).some(y => y.type === 'quality' || y.type === 'long')) notes[d] = notes[d] || 'Heavy legs the day before a hard run. An upper or hips-and-core session fits better here.';
     });
     if (ss.length > 1) notes[d] = 'Two strength sessions on one day. Keep one.';
+    const hardHere = (byDay[d] || []).some(x => x.type === 'quality' || x.type === 'long'), need = masters() ? 3 : 2;
+    if (hardHere) for (let k = 1; k < need; k++) { const dd = DAYS[(DAYS.indexOf(d) - k + 7) % 7]; if ((byDay[dd] || []).some(x => x.type === 'quality' || x.type === 'long')) notes[d] = 'Two hard runs within ' + (need === 3 ? '72' : '48') + ' hours. Give them ' + (need === 3 ? 'three' : 'two') + ' clear days.'; }
   });
   return notes;
 };
@@ -663,11 +787,59 @@ const runMinutesPlanned = () => { let t = 0; tpl().forEach(s => { if (s.type !==
 const nextWeekPreview = (feel, repeat) => {
   const w = S.week, p = S.profile;
   if (w.kind === 'deload') return {kind:'build', pos:1, level:w.resume, resume:w.resume, label:'Build week 1 of ' + p.buildWeeks};
+  if (S.forceDeload) return {kind:'deload', pos:w.pos, level:w.level, resume:w.level, label:'Lighter week: three quality sessions in a row were a struggle'};
   if (feel === 'tough') return {kind:'deload', pos:w.pos, level:w.level, resume:w.level, label:'Lighter week, then back to building'};
   if (repeat) return {kind:'build', pos:w.pos, level:w.level, resume:w.resume, label:'Build week ' + w.pos + ' of ' + p.buildWeeks + ' again, same level'};
   const lvl = w.level + 1, pos = w.pos + 1; /* always one step: a long run never jumps more than about 10 percent */
   if (pos > p.buildWeeks) return {kind:'deload', pos:p.buildWeeks, level:w.level, resume:lvl, label:'Lighter week'};
   return {kind:'build', pos:pos, level:lvl, resume:lvl, label:'Build week ' + pos + ' of ' + p.buildWeeks};
+};
+
+/* ============ heart rate ============ */
+const hasHR = () => S.profile.hrMode === 'zone' || S.profile.hrMode === 'karvonen';
+const hrr = f => Math.round(S.profile.rhr + f*(S.profile.mhr - S.profile.rhr));
+const easyCap = () => { const p = S.profile; if (p.hrMode === 'zone' && p.hrCap) return p.hrCap; if (p.hrMode === 'karvonen' && p.mhr && p.rhr) return hrr(0.70); return null; };
+const hrZones = () => { const p = S.profile; if (p.hrMode !== 'karvonen' || !p.mhr || !p.rhr) return null; return [['Zone 1', hrr(0.5), hrr(0.6), 'Warm-up and recovery jogs'], ['Zone 2', hrr(0.6), hrr(0.7), 'Easy and long runs'], ['Zone 3', hrr(0.7), hrr(0.8), 'Steady, and late in long runs'], ['Zone 4', hrr(0.8), hrr(0.9), 'Marathon pace and threshold'], ['Zone 5', hrr(0.9), p.mhr, 'Intervals and strides, briefly']]; };
+const easyZoneName = () => S.profile.watch === 'coros' ? 'Aerobic Endurance' : 'Zone 2';
+
+/* ============ long run builder ============ */
+const buildLong = (lrv, min) => {
+  const p = P(), cap = easyCap(), o = {blocks:[], hard:lrv !== 'easy'};
+  const ctl = cap ? 'keep your heart rate under ' + cap + ' bpm' : (p ? 'slower than ' + fmtPace(p.easy) + '/km' : 'full sentences the whole way');
+  if (lrv === 'prog') {
+    const t = Math.round(min/3/5)*5;
+    o.blocks.push(['First ' + t + ' min', 'Easy, ' + ctl + '.']);
+    o.blocks.push(['Middle ' + t + ' min', 'Steady: a gear up, short sentences only.']);
+    o.blocks.push(['Final ' + (min - 2*t) + ' min', 'Build so the last 10 minutes are at threshold, ' + pn('thr') + '. If that last part is a fight, you started too fast.']);
+  } else if (lrv === 'fast') {
+    const f = Math.max(15, Math.round(min*0.25/5)*5), k = S.profile.goal === 'marathon' ? 'mp' : 'hm';
+    o.blocks.push(['First ' + (min - f) + ' min', 'Easy, ' + ctl + '.']);
+    o.blocks.push(['Final ' + f + ' min', 'At ' + (k === 'mp' ? 'marathon' : 'half marathon') + ' pace, ' + pn(k) + '. Practise pushing when tired.']);
+  } else if (lrv === 'mp') {
+    const total = Math.min(MP_LADDER[Math.min(S.mpLevel || 0, MP_LADDER.length - 1)], Math.round(min*0.4/5)*5), n = total >= 30 ? (total >= 40 ? 2 : 3) : 2, each = Math.round(total/n);
+    const easy = Math.max(10, Math.round((min - total)/(n + 1)/5)*5);
+    o.blocks.push(['Easy ' + easy + ' min', ctl + ' to start.']);
+    for (let i = 0; i < n; i++) { o.blocks.push([each + ' min at marathon pace', pn('mp') + '. Let your heart rate rise here; that is correct.']); if (i < n - 1) o.blocks.push(['Easy ' + easy + ' min', 'Recover, ' + ctl + '.']); }
+    o.blocks.push(['Easy to the end', 'Whatever is left of the ' + min + ' min.']);
+    o.mpTotal = total;
+  } else o.blocks.push(['All ' + min + ' min', 'Easy, ' + ctl + '. Run by time, not distance.']);
+  return o;
+};
+
+/* ============ second quality session: the gate ============ */
+const q2Earned = p => {
+  p = p || S.profile;
+  const reasons = [], hist = S.history || [];
+  if (p.runDays < 4) reasons.push('four or more running days');
+  if (beginner()) reasons.push('a longest run over 30 minutes and a 5K under 35 minutes');
+  if (hist.length < 8) reasons.push((8 - hist.length) + ' more finished ' + (8 - hist.length === 1 ? 'week' : 'weeks'));
+  const tough = hist.slice(-4).some(h => h.feel === 'tough'); if (tough) reasons.push('four weeks without a week marked too much');
+  if (p.age && p.age >= 50) reasons.push('not available over 50: the evidence wants 72 hours between hard runs, and three cannot fit in a week');
+  if ((S.q2pauseUntil || 0) > S.week.no) reasons.push('week ' + S.q2pauseUntil + ', paused after a hard patch');
+  const q3 = (S.qfb || []).slice(-3); if (q3.length === 3 && q3.every(x => x.fb === 'struggled')) reasons.push('a smoother run of quality sessions');
+  let min = 0; const v = vol(S.week.level, false); S.template.forEach(x => { if (x.type === 'easy') min += v[x.role] || v.E2; else if (x.type === 'long') min += v.L; else if (x.type === 'quality') min += 45; });
+  if (min < 300 && hist.length) reasons.push('about 5 hours of running a week (currently ' + fmtHM(min) + ')');
+  return {ok:reasons.length === 0, reasons:reasons};
 };
 
 /* ============ small ui helpers ============ */
@@ -699,7 +871,7 @@ const renderWeek = () => {
   const sinceTest = w.no - (p.testWeek || 1);
   if (!p.setup) h += '<div class="banner">Your week is not set up yet.<button data-act="settings">Set it up now</button></div>';
   else if (pendingCloud) h += '<div class="banner">Two different plans were found under your code, and nothing is being saved until you choose.<button data-act="syncpill">Choose which to keep</button></div>';
-  else if (!syncKey()) h += '<div class="banner">This phone is not linked to the cloud, so your plan only exists here. Clear browser data or change phone and it is gone.<button data-act="link">Link with your code</button></div>';
+  else if (!syncKey()) h += '<div class="banner">This phone is not linked to the cloud, so your plan only exists here. Clear browser data or change phone and it is gone.<button data-act="link">Create or enter a code</button></div>';
   else if (toISO(mondayOf(new Date())) > w.start && w.start) h += '<div class="banner">A new calendar week has started. Finish week ' + w.no + ' when you are ready to move on.<button data-act="checkin">Finish week ' + w.no + '</button></div>';
   else if (hasPaces() && sinceTest >= 8 && !dl) h += '<div class="banner">It has been ' + sinceTest + ' weeks since you set your 5K. Run a parkrun and update it so every pace matches your fitness now.<button data-act="retest">Update my 5K</button></div>';
   h += '<div class="weekhead"><span class="weekno">Week ' + w.no + '</span><span class="phase ' + (dl ? 'deload' : 'build') + '">' + (dl ? 'Lighter week' : 'Build week ' + w.pos + ' of ' + p.buildWeeks) + '</span></div>';
@@ -744,6 +916,15 @@ const renderPaces = () => {
       + '<tr><td>VO2max</td><td>' + rep(pc.i, 400) + '</td><td>' + rep(pc.i, 800) + '</td><td>' + rep(pc.i, 1000) + '</td></tr>'
       + '<tr><td>Fast reps</td><td>' + rep(pc.r, 400) + '</td><td>' + rep(pc.r, 800) + '</td><td>' + rep(pc.r, 1000) + '</td></tr></table>';
   }
+  if (hasHR()) {
+    const cap = easyCap(), z = hrZones();
+    h += '<div class="sec-title sub">Heart rate</div>';
+    h += '<div class="cards"><div class="pc" style="--c:var(--easy)"><div class="n">Easy cap</div><div class="v">' + cap + '<small>bpm</small></div><div class="d">Top of ' + easyZoneName() + '. Easy and long runs stay under this.</div></div>'
+      + (z ? '<div class="pc" style="--c:var(--long)"><div class="n">Reserve</div><div class="v">' + (p.mhr - p.rhr) + '<small>bpm</small></div><div class="d">Max ' + p.mhr + ', resting ' + p.rhr + '. Zones are percent of this, not of max.</div></div>' : '<div class="pc" style="--c:var(--long)"><div class="n">Source</div><div class="v" style="font-size:1.2rem">Your watch</div><div class="d">Platform zones beat anything recalculated.</div></div>') + '</div>';
+    if (z) h += '<table class="tt"><tr><th>Zone</th><th>bpm</th><th>Used for</th></tr>' + z.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + ' to ' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('') + '</table>';
+    h += '<p class="hint">Quality sessions stay on pace or effort; heart rate lags too much on short reps to steer them. If an easy run at the cap ever feels harder than full sentences, the cap is too generous: trust the talk test and lower it in settings.</p>';
+  }
+  if (pc && (p.goal === 'half' || p.goal === 'marathon')) h += '<div class="sec-title sub">Race paces</div><div class="cards"><div class="pc" style="--c:var(--long)"><div class="n">Marathon pace</div><div class="v">' + fmtPace(pc.mp) + '<small>/km</small></div><div class="d">Used in marathon-pace blocks.</div></div><div class="pc" style="--c:var(--quality)"><div class="n">Half marathon pace</div><div class="v">' + fmtPace(pc.hm) + '<small>/km</small></div><div class="d">Used in fast-finish long runs.</div></div></div>';
   h += '<div class="sec-title sub">Effort guide</div><p class="hint">No watch needed. Use the talk test and this scale. If a run is drifting into "steady", slow down: that middle gear adds fatigue without the benefit.</p>';
   h += '<table class="tt"><tr><th>Effort</th><th>Feels like</th><th>Used for</th></tr>'
     + '<tr><td>Easy</td><td>Full sentences, could go for ages</td><td>Easy and long runs</td></tr>'
@@ -768,6 +949,13 @@ const renderProgress = () => {
     h += '<p class="hint">Minutes of running completed each week. Green bars are lighter weeks.</p>';
     h += '<div class="sec-title sub">Weeks</div><div class="list">' + hist.slice(-8).reverse().map(x => '<div class="li"><span>Week ' + x.no + (x.kind === 'deload' ? ', lighter' : '') + '</span><span>' + x.done + ' of ' + x.planned + ' done, felt ' + ({easy:'easy', right:'about right', tough:'too much'}[x.feel] || x.feel) + '</span></div>').join('') + '</div>';
   }
+  const el = S.easyLog || [];
+  if (hasHR()) {
+    h += '<div class="sec-title sub">Easy pace at your heart rate cap</div>';
+    h += el.length ? '<div class="stats"><div class="stat"><b>' + fmtPace(el[0].pace) + '</b><span>first logged, week ' + el[0].no + '</span></div><div class="stat"><b>' + fmtPace(el[el.length - 1].pace) + '</b><span>latest, week ' + el[el.length - 1].no + '</span></div></div><p class="hint">Same heart rate, faster pace means a stronger aerobic engine. Expect it to wander week to week with heat, sleep and terrain; look at the trend over a month.</p>' : '<div class="empty">Log your average pace after easy runs (there is a box in each easy run) and the trend shows up here.</div>';
+  }
+  const fb = (S.qfb || []).slice(-6);
+  if (fb.length) h += '<div class="sec-title sub">Recent quality sessions</div><div class="list">' + fb.slice().reverse().map(x => '<div class="li"><span>' + ((qById(x.q) || {}).name || x.q) + '</span><span>Week ' + x.no + ', ' + ({smooth:'smooth', hard:'hard but fine', struggled:'struggled'}[x.fb] || x.fb) + '</span></div>').join('') + '</div>';
   const qs = Q.filter(q => S.qLast[q.id] !== undefined);
   h += '<div class="sec-title sub">Quality sessions</div><div class="list">';
   h += qs.length ? qs.map(q => { const lv = Math.min(S.levels[q.id] || 0, q.lv.length - 1); return '<div class="li"><span>' + q.name + '</span><span>Level ' + (lv + 1) + ' of ' + q.lv.length + '<span class="dots">' + q.lv.map((_, i) => '<i class="' + (i < lv ? 'on' : '') + '"></i>').join('') + '</span></span></div>'; }).join('') : '<div class="li"><span>Nothing completed yet</span><span></span></div>';
@@ -822,14 +1010,26 @@ document.addEventListener('pointercancel', endDrag);
 
 /* ============ sheets: runs ============ */
 const openRun = s => {
-  const i = sessInfo(s), dn = !!S.week.done[s.id], pc = P(), long = s.type === 'long';
-  let h = head(i.t, long ? 'Easy pace, the longest run of your week' : 'Easy pace');
+  const i = sessInfo(s), dn = !!S.week.done[s.id], pc = P(), long = s.type === 'long', cap = easyCap(), lrv = long ? S.week.lrv : 'easy';
+  let h = head(i.t, long ? (lrv === 'easy' ? 'Easy pace, the longest run of your week' : LRV[lrv].sub + ', a hard session') : 'Easy pace');
   h += '<div class="bigmin">' + i.min + '<small>min</small></div>';
-  h += '<div class="block"><h4>How to run it</h4><p>Talk test: full sentences the whole way. If you cannot, slow down.</p>' + (pc ? '<p>Pace ceiling: slower than <b>' + fmtPace(pc.easy) + '/km</b>. It is a ceiling, not a target. Slower is fine, faster is the mistake.</p><p>Roughly ' + (i.min*60/(pc.easy + 35)).toFixed(1) + ' km at a typical easy pace. Run by time, not distance.</p>' : '<p>Run by time, not distance. Easy should feel almost too slow.</p>') + '</div>';
+  if (lrv !== 'easy') {
+    const b = buildLong(lrv, i.min);
+    h += '<div class="block"><h4>Structure</h4>' + b.blocks.map(x => '<p><b>' + esc(x[0]) + '</b> ' + esc(x[1]) + '</p>').join('') + '</div>';
+    if (cap) h += '<div class="block"><h4>Heart rate</h4><p>Control the easy parts by heart rate. In the faster parts, control by pace and let your heart rate climb. Do not slow down to chase the number there.</p></div>';
+    h += '<div class="block"><h4>Fuel</h4><p>Take water and carbohydrate. A structured long run uses more than an easy one. Have something within 30 minutes of finishing.</p></div>';
+  } else {
+    h += '<div class="block"><h4>How to run it</h4>' + (cap
+      ? '<p>Keep your heart rate under <b>' + cap + ' bpm</b>, the top of ' + easyZoneName() + '. That is the rule; pace is only a guide' + (pc ? ' (about ' + fmtPace(pc.easy) + '/km or slower)' : '') + '.</p><p>If you can\u2019t talk in full sentences at that heart rate, your numbers are too generous: slow down anyway and tell us.</p>'
+      : '<p>Talk test: full sentences the whole way. If you cannot, slow down.</p>' + (pc ? '<p>Pace ceiling: slower than <b>' + fmtPace(pc.easy) + '/km</b>. It is a ceiling, not a target. Slower is fine, faster is the mistake.</p><p>Roughly ' + (i.min*60/(pc.easy + 35)).toFixed(1) + ' km at a typical easy pace. Run by time, not distance.</p>' : '<p>Run by time, not distance. Easy should feel almost too slow.</p>')) + '</div>';
+    if (long && cap) h += '<div class="block"><h4>Drift</h4><p>Expect it to creep up 5 to 10 beats in the back half even at the same pace. That is normal. If it is 15 or more over, slow down or walk the hills.</p></div>';
+    if (long) h += '<div class="block"><h4>Fuel</h4><p>Over 75 minutes, take water and some carbohydrate with you.' + (S.profile.niggle === 'itb' ? ' Keep the route flat where you can; downhills are what upset an IT band.' : '') + '</p></div>';
+  }
   if (s.strides) h += '<div class="block"><h4>Strides</h4><p>Finish with 6 x 20 s strides: smooth and fast, never a sprint. Walk back between each. They keep your legs sharp at almost no cost.</p></div>';
-  if (long) h += '<div class="block"><h4>Fuel</h4><p>Over 75 minutes, take water and some carbohydrate with you.' + (S.profile.niggle === 'itb' ? ' Keep the route flat where you can; downhills are what upset an IT band.' : '') + '</p></div>';
+  if (cap && !dn) h += '<div class="field"><label for="epace">Average pace today (optional, min:sec per km)</label><input id="epace" type="text" inputmode="numeric" placeholder="5:45" autocomplete="off"><p class="hint">Log it and Progress shows your pace at the same heart rate getting faster over the weeks.</p></div>';
   h += moveRow(s);
   if (s.type === 'easy') h += '<button class="btn sm" data-act="retype" data-arg="' + s.id + '|quality">Make this a quality run instead</button>';
+  if (long && lrv !== 'easy' && !dn) h += '<button class="btn sm" data-act="longeasy" data-arg="' + s.id + '">Make it an easy long run this week</button>';
   h += '<button class="btn sm warn" data-act="remove" data-arg="' + s.id + '">Remove from my week</button>';
   h += '<button class="btn ' + (dn ? '' : 'ok') + '" data-act="tick" data-arg="' + s.id + '" data-close="1">' + (dn ? 'Mark not done' : 'Mark done') + '</button>';
   openSheet(h);
@@ -853,6 +1053,7 @@ const openQPicker = s => {
 };
 const openQ = s => {
   const w = S.week, q = qById(w.picks[s.id]);
+  if (w.q2off && isQ2(s)) { const e = Object.assign({}, s, {type:'easy', role:'E2', strides:true}); return openRun(e); }
   if (!q) return openQPicker(s);
   const dl = w.kind === 'deload', dn = !!w.done[s.id], lvl = dn && w.bump[s.id] ? w.bump[s.id].from : (S.levels[q.id] || 0), b = buildQ(q, lvl, dl);
   let h = head(q.name, FAM[q.fam].name + (dl ? ', lighter week version' : '') + (w.auto[s.id] ? ', suggested for this week' : ''));
@@ -861,12 +1062,22 @@ const openQ = s => {
   h += '<div class="block"><h4>Main set</h4>' + b.lines.map((l, i) => i === 0 ? '<p class="big">' + esc(l) + '</p>' : '<p>' + esc(l) + '</p>').join('') + '</div>';
   h += '<div class="block"><h4>Cool-down</h4><p>' + b.cool + '</p></div>';
   h += '<div class="block"><h4>How it should feel</h4><p>' + esc(q.tip) + '</p></div>';
+  if (b.capped) h += '<p class="hint warnhint">Held at this level by your weekly volume: the main set is capped at about ' + (q.cap === 'thr' ? '10' : q.cap === 'vo2' ? '8' : '5') + ' percent of your running. More easy miles unlock the next rung.</p>';
   h += '<p class="hint">' + (dl ? 'Lighter week, so no level change.' : b.top ? 'Top level for this session. When it feels comfortable, update your 5K on the Paces tab and every pace resets.' : 'Level ' + (b.level + 1) + ' of ' + q.lv.length + '. Tick it done and it steps up next time you choose it.') + '</p>';
   if (!dn) h += '<button class="btn sm" data-act="changeq" data-arg="' + s.id + '">Choose a different session</button>';
   h += moveRow(s);
   h += '<button class="btn sm" data-act="retype" data-arg="' + s.id + '|easy">Make this an easy run instead</button>';
   h += '<button class="btn sm warn" data-act="remove" data-arg="' + s.id + '">Remove from my week</button>';
   h += '<button class="btn ' + (dn ? '' : 'ok') + '" data-act="tick" data-arg="' + s.id + '" data-close="1">' + (dn ? 'Mark not done' : 'Mark done') + '</button>';
+  openSheet(h);
+};
+const openQFeedback = s => {
+  const q = qById(S.week.picks[s.id]);
+  let h = head('How did it go?', q ? q.name : 'Quality session');
+  [['smooth','Smooth','Felt controlled, could have done more'], ['hard','Hard but fine','Finished it properly, that was enough'], ['struggled','Struggled','Cut it short, slowed badly or felt wrong']].forEach(x => {
+    h += '<div role="button" tabindex="0" class="opt" style="--c:var(--quality)" data-act="qfb" data-arg="' + s.id + '|' + x[0] + '"><span class="t">' + x[1] + '</span><span class="s">' + x[2] + '</span></div>';
+  });
+  h += '<p class="hint">Three struggled in a row forces a lighter week. That is the coaching rule, not a punishment.</p>';
   openSheet(h);
 };
 
@@ -958,7 +1169,7 @@ const openRetest = () => {
 const openBackup = () => {
   const k = syncKey();
   let h = head('Back up or restore', k ? 'Progress syncs to the cloud as ' + k + '. The code below is a spare copy.' : 'Progress lives in this browser. Copy the code to keep it safe or move phones.');
-  if (k) h += '<div class="block"><h4>Your code</h4><p class="big">' + esc(k) + '</p><p>Your link is ' + esc(location.origin + '/?u=' + k) + '. Open it on any phone, or type the code into "Already have a code".</p></div><button class="btn sm" data-act="link">Change code</button>';
+  if (k) h += '<div class="block"><h4>Your code</h4><p class="big">' + esc(k) + '</p><p>Your link is ' + esc(location.origin + '/?u=' + k) + '. Open it on any phone, or type the code into "Used this before?" on the first screen.</p></div><button class="btn sm" data-act="link">Change code</button>';
   else h += '<button class="btn sm pri" data-act="link">Link this phone</button>';
   h += '<div class="field"><label for="bk">Your backup code</label><textarea id="bk" rows="4" readonly>' + esc(btoa(unescape(encodeURIComponent(JSON.stringify(S))))) + '</textarea></div><button class="btn sm" data-act="copybk">Copy backup code</button>';
   h += '<div class="field"><label for="rs">Restore from a code</label><textarea id="rs" rows="3" placeholder="Paste a backup code"></textarea></div><div id="rserr" class="err" role="alert"></div><button class="btn sm" data-act="restore">Restore</button>';
@@ -970,7 +1181,7 @@ let qz = null;
 const QSTEPS = ['focus','running','strength','body','cycle'];
 const openSetup = first => {
   const p = S.profile;
-  qz = qz || {step:0, d:{focus:p.focus, runDays:p.runDays, strengthDays:p.strengthDays, fiveK:p.fiveK ? fmtTime(p.fiveK) : '', longMin:p.longMin, longCap:p.longCap, buildWeeks:p.buildWeeks, equipment:p.equipment, niggle:p.niggle, freeDay:p.freeDay}, first:first};
+  qz = qz || {step:0, d:{focus:p.focus, goal:p.goal, age:p.age || '', hrMode:p.hrMode, watch:p.watch, hrCap:p.hrCap || '', mhr:p.mhr || '', rhr:p.rhr || '', mhrSrc:'measured', secondQ:p.secondQ ? 1 : 0, runDays:p.runDays, strengthDays:p.strengthDays, fiveK:p.fiveK ? fmtTime(p.fiveK) : '', longMin:p.longMin, longCap:p.longCap, buildWeeks:p.buildWeeks, equipment:p.equipment, niggle:p.niggle, freeDay:p.freeDay}, first:first};
   renderSetup();
 };
 const renderSetup = () => {
@@ -979,13 +1190,17 @@ const renderSetup = () => {
   if (st === 'focus') {
     h += head(qz.first ? 'Let\u2019s build your week' : 'Your focus', 'Five quick questions. Change any of them later in settings.');
     h += '<div class="field"><label>What matters most right now?</label>' + seg('focus', ['run','both','strength'], d.focus, ['Running', 'Both', 'Strength']) + '<p class="hint">Running focus keeps lifting at maintenance so your legs are fresh for runs. Strength focus progresses lifts and builds the long run more gently. Both does both, a little slower each.</p></div>';
-    if (qz.first) h += '<button class="linkbtn" data-act="link">Already have a code? Link this phone</button>';
+    h += '<div class="field"><label>Running goal</label>' + seg('goal', ['fitness','5k10k','half','marathon'], d.goal, ['Fitness', '5K or 10K', 'Half', 'Marathon']) + '<p class="hint">Sets the mix of quality sessions and what the long runs do. 5K and 10K lean on intervals, half on threshold, marathon on race-pace long runs with no intervals.</p></div>';
+    h += '<div class="field"><label for="fage">Age (optional)</label><input id="fage" type="number" inputmode="numeric" min="14" max="99" value="' + esc(d.age) + '"><p class="hint">Over 50, hard runs get three clear days apart and the cycle tops out at three build weeks.</p></div>';
+    if (qz.first) h += '<button class="linkbtn" data-act="link">Used this before? Enter your code instead</button>';
   } else if (st === 'running') {
     h += head('Running', 'The week fills itself in from these.');
-    h += '<div class="field"><label>Running days per week</label>' + seg('runDays', [0,1,2,3,4,5,6,7], d.runDays) + '<p class="hint">3 gives you easy, quality and long. 4 adds a second easy run, and so on. At 7 you get two quality sessions.</p></div>';
+    h += '<div class="field"><label>Running days per week</label>' + seg('runDays', [0,1,2,3,4,5,6,7], d.runDays) + '<p class="hint">3 gives you easy, quality and long. 4 adds a second easy run, and so on. A second quality session is a setting on the last step, unlocked once it is earned.</p></div>';
     h += '<div class="field"><label for="f5k">Recent 5K time (optional)</label><input id="f5k" type="text" inputmode="numeric" placeholder="24:30" value="' + esc(d.fiveK) + '" autocomplete="off"><p class="hint">A parkrun or hard solo effort. Sets every pace. Leave it blank and runs go by effort instead.</p></div>';
     h += '<div class="field"><label for="flong">Longest easy run you can do comfortably now, in minutes</label><input id="flong" type="number" inputmode="numeric" min="0" value="' + esc(d.longMin) + '"></div>';
     h += '<div class="field"><label for="fcap">Long run ceiling, in minutes</label><input id="fcap" type="number" inputmode="numeric" min="0" value="' + esc(d.longCap) + '"><p class="hint">The long run grows until it reaches this. Raise it whenever you want more.</p></div>';
+    h += '<div class="field"><label>Heart rate monitor?</label>' + seg('hrMode', ['none','zone','karvonen'], d.hrMode, ['No', 'Watch zones', 'Max and resting']) + '<p class="hint">With heart rate, easy and long runs are controlled by it instead of pace. That is the better way; pace is the fallback.</p></div>';
+    h += '<div id="hrfields">' + hrFields(d) + '</div>';
   } else if (st === 'strength') {
     h += head('Strength', 'Sessions are built from movement patterns, so they fit your kit.');
     h += '<div class="field"><label>Strength days per week</label>' + seg('strengthDays', [0,1,2,3,4,5,6,7], d.strengthDays) + '<p class="hint">1 to 3 gives full-body sessions. 4 to 5 splits upper and lower. 6 to 7 adds push, pull and legs days, plus hips and core.</p></div>';
@@ -997,6 +1212,8 @@ const renderSetup = () => {
     h += head('Your cycle', 'How the weeks repeat.');
     h += '<div class="field"><label>Build weeks before a lighter week</label>' + seg('buildWeeks', [2,3,4,5], d.buildWeeks) + '<p class="hint">3 means three weeks building, then one lighter week, on repeat. You can call a lighter week early any time.</p></div>';
     h += '<div class="field"><label>Day you most want free</label>' + seg('freeDay', DAYS, d.freeDay, DAYS.map(x => DAY3[x])) + '<p class="hint">Kept clear unless you train every day.</p></div>';
+    const g = q2Earned(Object.assign({}, S.profile, {runDays:d.runDays, age:d.age || null}));
+    h += '<div class="field"><label>Second quality session each week</label>' + seg('secondQ', [0,1], d.secondQ, ['Off', 'On when earned']) + '<p class="hint">' + (g.ok ? 'Earned. It takes the place of an easy run, 48 hours from the other hard runs. In weeks with a structured long run it drops back to easy, so you never have three hard days.' : 'Not yet. It unlocks with: ' + g.reasons.join('; ') + '. Leave it on and it appears by itself.') + '</p></div>';
     const pr = S.profile, changed = !qz.first && (d.runDays !== pr.runDays || d.strengthDays !== pr.strengthDays || d.freeDay !== pr.freeDay), progress = Object.keys(S.week.done).length || Object.keys(S.week.logs).length;
     if (changed && progress) h += '<p class="hint warnhint">Changing your running days, strength days or free day rebuilds this week and clears this week\u2019s ticks and logged weights. Past weeks, lifts and levels are kept.</p>';
   }
@@ -1004,10 +1221,32 @@ const renderSetup = () => {
   h += '<div class="row">' + (qz.step > 0 ? '<button class="btn half" data-act="qback">Back</button>' : (qz.first ? '' : '<button class="btn half" data-act="close">Cancel</button>')) + '<button class="btn half pri" data-act="qnext">' + (qz.step === n - 1 ? (qz.first ? 'Build my week' : 'Save') : 'Next') + '</button></div>';
   openSheet(h);
 };
+const hrFields = d => {
+  if (d.hrMode === 'none') return '';
+  let h = '<div class="field"><label>Watch</label>' + seg('watch', ['garmin','coros','other'], d.watch, ['Garmin', 'COROS', 'Other']) + '</div>';
+  if (d.hrMode === 'zone') h += '<div class="field"><label for="fhrcap">Top of your easy zone, in bpm</label><input id="fhrcap" type="number" inputmode="numeric" min="90" max="200" value="' + esc(d.hrCap) + '"><p class="hint">' + (d.watch === 'coros' ? 'The top of Aerobic Endurance in the COROS app.' : 'The top of Zone 2 on your watch.') + ' Your watch\u2019s own zones beat anything recalculated.</p></div>';
+  else {
+    h += '<div class="field"><label for="fmhr">Max heart rate</label><input id="fmhr" type="number" inputmode="numeric" min="150" max="215" value="' + esc(d.mhr) + '"></div>';
+    h += '<div class="field"><label>Where is that max from?</label>' + seg('mhrSrc', ['measured','estimated'], d.mhrSrc, ['Measured', 'A formula or guess']) + '<p class="hint">Measured means an all-out race finish or test with a strap, or a ceiling you keep hitting in your data. Age formulas miss by 12 beats either way, which is a whole zone.</p></div>';
+    h += '<div class="field"><label for="frhr">Resting heart rate</label><input id="frhr" type="number" inputmode="numeric" min="30" max="95" value="' + esc(d.rhr) + '"><p class="hint">' + (d.watch === 'coros' ? 'COROS records resting HR on waking, 5 to 8 beats high, which would inflate these zones. Use your watch\u2019s zones instead.' : 'The overnight low from your watch, or taken first thing before you get up.') + '</p></div>';
+  }
+  return h;
+};
 const readSetupInputs = () => {
-  const d = qz.d, st = QSTEPS[qz.step];
+  const d = qz.d, st = QSTEPS[qz.step], $ = id => document.getElementById(id) || {value:''};
+  if (st === 'focus') { const ag = $('fage').value.trim(); d.age = ag === '' ? '' : +ag; if (ag !== '' && !(d.age >= 14 && d.age <= 99)) return 'Age should be between 14 and 99, or left blank.'; }
   if (st === 'running') {
     d.fiveK = $('f5k').value.trim(); d.longMin = +$('flong').value; d.longCap = +$('fcap').value;
+    const num = id => { const v = $(id).value; return v === '' ? '' : +v; };
+    if (d.hrMode === 'zone') { d.hrCap = num('fhrcap'); if (!(d.hrCap >= 90 && d.hrCap <= 200)) return 'Enter the top of your easy zone, between 90 and 200 bpm.'; }
+    if (d.hrMode === 'karvonen') {
+      d.mhr = num('fmhr'); d.rhr = num('frhr');
+      if (d.watch === 'coros') return 'On COROS, use your watch\u2019s zones: its waking resting HR inflates zones built this way.';
+      if (d.mhrSrc !== 'measured') return 'A guessed max gives guessed zones. Measure it, or use your watch\u2019s zones.';
+      if (!(d.mhr >= 150 && d.mhr <= 215)) return 'Max heart rate should be between 150 and 215.';
+      if (!(d.rhr >= 30 && d.rhr <= 95)) return 'Resting heart rate should be between 30 and 95.';
+      if (d.mhr - d.rhr < 80) return 'Max and resting are too close together to be right. Check both.';
+    }
     if (d.fiveK && (parseTime(d.fiveK) === null || parseTime(d.fiveK) < 720 || parseTime(d.fiveK) > 3600)) return 'Enter the 5K as minutes and seconds, like 24:30, or leave it blank.';
     if (d.runDays > 0 && !(d.longMin >= 15 && d.longMin <= 210)) return 'Longest easy run should be between 15 and 210 minutes.';
     if (d.runDays > 0 && !(d.longCap >= 30 && d.longCap <= 210)) return 'Long run ceiling should be between 30 and 210 minutes (that is the three and a half hour cap).';
@@ -1017,12 +1256,14 @@ const readSetupInputs = () => {
 };
 const finishSetup = () => {
   const d = qz.d, p = S.profile;
-  const relayout = !p.setup || d.runDays !== p.runDays || d.strengthDays !== p.strengthDays || d.freeDay !== p.freeDay;
+  const relayout = !p.setup || d.runDays !== p.runDays || d.strengthDays !== p.strengthDays || d.freeDay !== p.freeDay || (!!d.secondQ !== !!p.secondQ && d.runDays >= 4);
   const sec = d.fiveK ? parseTime(d.fiveK) : null;
   if (sec !== p.fiveK) p.testWeek = S.week.no;
   if (!p.setup || d.longMin !== p.longMin) p.startedLong = d.longMin;
   p.focus = d.focus; p.runDays = d.runDays; p.strengthDays = d.strengthDays; p.fiveK = sec; p.longMin = d.longMin; p.longCap = Math.max(d.longCap, d.longMin);
   p.buildWeeks = d.buildWeeks; p.equipment = d.equipment; p.niggle = d.niggle; p.freeDay = d.freeDay;
+  p.goal = d.goal; p.age = d.age === '' ? null : d.age; p.hrMode = d.hrMode; p.watch = d.watch; p.hrCap = d.hrMode === 'zone' ? d.hrCap : null; p.mhr = d.hrMode === 'karvonen' ? d.mhr : null; p.rhr = d.hrMode === 'karvonen' ? d.rhr : null; p.secondQ = !!d.secondQ;
+  if (p.age && p.age >= 50 && p.buildWeeks > 3) p.buildWeeks = 3;
   const wasSetup = p.setup; p.setup = true;
   if (relayout) { S.template = genTemplate(p); S.week.done = {}; S.week.picks = {}; S.week.auto = {}; S.week.logs = {}; S.week.bump = {}; S.week.snap = {}; }
   if (!S.week.start) S.week.start = toISO(mondayOf(new Date()));
@@ -1030,23 +1271,32 @@ const finishSetup = () => {
   autoPick();
   qz = null; S.tab = 'week'; save(); closeSheet(); render(); toTop();
   toast(wasSetup ? (relayout ? 'Week rebuilt' : 'Saved') : 'Your week is ready');
+  if (!wasSetup && !syncKey() && window.fbLoad) setTimeout(() => createCode(true), 600);
 };
 
 /* ============ completion and progression ============ */
-const tickSlot = id => {
+const tickSlot = (id, fb) => {
   const w = S.week, s = slotById(id); if (!s) return;
   if (w.done[id]) {
     delete w.done[id];
+    S.qfb = (S.qfb || []).filter(x => !(x.no === w.no && x.slot === id)); S.forceDeload = false;
     if (w.bump[id]) { S.levels[w.bump[id].q] = w.bump[id].from; delete w.bump[id]; }
     if (w.snap[id]) { S.lifts = JSON.parse(w.snap[id]); delete w.snap[id]; }
     save(); render(); return;
   }
+  const realQ = s.type === 'quality' && !(w.q2off && isQ2(s)) && !!qById(w.picks[id]);
+  if (realQ && !fb) return openQFeedback(s);
   w.done[id] = true;
-  if (s.type === 'quality') {
-    const q = qById(w.picks[id]);
-    if (q) { if (w.kind === 'build') { const cur = S.levels[q.id] || 0; w.bump[id] = {q:q.id, from:cur}; S.levels[q.id] = Math.min(q.lv.length - 1, cur + 1); } S.qLast[q.id] = w.no; S.qLast.__fam = q.fam; }
-    toast(w.kind === 'build' && q ? 'Done. It steps up next time' : 'Done');
-  } else if (s.type === 'strength' && s.key) {
+  if (realQ) {
+    const q = qById(w.picks[id]), up = fb !== 'struggled';
+    if (w.kind === 'build' && up) { const cur = S.levels[q.id] || 0; w.bump[id] = {q:q.id, from:cur}; S.levels[q.id] = Math.min(q.lv.length - 1, cur + 1); }
+    S.qLast[q.id] = w.no; S.qLast.__fam = q.fam; S.qLast['__f_' + q.fam] = w.no;
+    S.qfb = (S.qfb || []).concat([{no:w.no, q:q.id, fb:fb, slot:id}]).slice(-30);
+    const last3 = S.qfb.slice(-3);
+    if (last3.length === 3 && last3.every(x => x.fb === 'struggled') && w.kind === 'build') { S.forceDeload = true; toast('Three struggles in a row: next week is a lighter one'); }
+    else toast(w.kind === 'build' && up ? 'Done. It steps up next time' : 'Done');
+  } else if (s.type === 'long' && w.lrv === 'mp') { S.mpLevel = Math.min(MP_LADDER.length - 1, (S.mpLevel || 0) + 1); toast('Done. More marathon pace next time'); }
+  else if (s.type === 'strength' && s.key) {
     w.snap[id] = JSON.stringify(S.lifts);
     const dl = w.kind === 'deload', lg = w.logs[id] || {};
     let logged = 0;
@@ -1071,7 +1321,9 @@ const finishWeek = () => {
   let runMin = 0; list.forEach(s => { if (s.type !== 'strength' && w.done[s.id]) runMin += sessInfo(s).min; });
   if (c.feel === 'easy' && w.kind === 'build' && !c.repeat) Object.keys(w.bump).forEach(id => { const q = qById(w.bump[id].q); if (q) S.levels[q.id] = Math.min(q.lv.length - 1, (S.levels[q.id] || 0) + 1); });
   S.history.push({no:w.no, kind:w.kind, level:w.level, planned:list.length, done:done, feel:c.feel, runMin:runMin, longMin:vol(w.level, w.kind === 'deload').L, start:w.start, ended:toISO(new Date())});
-  S.week = {no:w.no + 1, kind:pv.kind, pos:pv.pos, level:pv.level, resume:pv.resume, start:toISO(mondayOf(new Date())), done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}};
+  S.week = {no:w.no + 1, kind:pv.kind, pos:pv.pos, level:pv.level, resume:pv.resume, start:toISO(mondayOf(new Date())), done:{}, picks:{}, logs:{}, bump:{}, snap:{}, auto:{}, lrv:'easy', q2off:false};
+  if (S.forceDeload) { S.forceDeload = false; S.q2pauseUntil = w.no + 5; }
+  if (c.feel === 'tough') S.q2pauseUntil = Math.max(S.q2pauseUntil || 0, w.no + 5);
   autoPick(); ci = null; S.tab = 'week';
   save(); closeSheet(); render(); toTop(); toast('Week ' + w.no + ' done. Next: ' + pv.label);
 };
@@ -1111,10 +1363,27 @@ const cloudBoot = () => {
   cloudReady = false; setSync('syncing');
   window.fbLoad(k).then(reconcile, () => setSync('fail'));
 };
+const newCode = () => { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let c = ''; for (let i = 0; i < 8; i++) c += a[Math.floor(Math.random()*a.length)]; return c.slice(0, 4) + '-' + c.slice(4); };
+const createCode = auto => {
+  if (auto && syncKey()) return;
+  if (!window.fbLoad) { if (!auto) toast('Cannot reach the cloud right now'); return; }
+  const k = newCode();
+  window.fbLoad(k).then(cloud => {
+    if (cloud) return createCode(auto);
+    if (auto && syncKey()) return;
+    try { localStorage.setItem(KEYSTORE, k); } catch (e) {}
+    setManifest(); cloudReady = true; pendingCloud = null; save(); render();
+    let h = head('Your code', 'Write it down or screenshot it. It is the only key to your plan.');
+    h += '<div class="block"><p class="big" style="font-size:2rem;letter-spacing:.04em">' + esc(k) + '</p><p>Your link: ' + esc(location.origin + '/?u=' + k) + '</p></div>';
+    h += '<button class="btn pri" data-act="copylink" data-arg="' + k + '">Copy my link</button><button class="btn" data-act="close">Done</button>';
+    openSheet(h);
+  }, () => toast('Cannot reach the cloud right now'));
+};
 const openLink = () => {
   const k = syncKey();
-  let h = head(k ? 'Change your code' : 'Link this phone', 'Your code ties your plan to you, so it survives a new phone or cleared browser data.');
-  h += '<div class="field"><label for="lcode">Your code</label><input id="lcode" type="text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="the part after ?u= in your link" value="' + esc(k || '') + '"><p class="hint">Not sure? It is the end of the link you were sent, after ?u=</p></div><div id="lerr" class="err" role="alert"></div><button class="btn pri" data-act="dolink">Link and load my plan</button>';
+  let h = head(k ? 'Change your code' : 'Link this phone', k ? 'Your code ties your plan to you, so it survives a new phone or cleared browser data.' : 'New here? Just answer the setup questions and a code is made for you at the end. Only use this if you already have one.');
+  if (!k) h += '<button class="btn pri" data-act="newcode">Create my code</button><p class="hint" style="text-align:center">or enter the code you already have</p>';
+  h += '<div class="field"><label for="lcode">Your code</label><input id="lcode" type="text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="like k7m2-x9pq" value="' + esc(k || '') + '"><p class="hint">It was shown when you first set up, and it is under Progress, Back up or restore, on any phone that has your plan.</p></div><div id="lerr" class="err" role="alert"></div><button class="btn ' + (k ? 'pri' : '') + '" data-act="dolink">Link and load my plan</button>';
   openSheet(h);
 };
 const doLink = () => {
@@ -1145,11 +1414,17 @@ const act = {
   seg: (a, t) => {
     const key = t.getAttribute('data-key'), val = isNaN(+a) || key === 'freeDay' ? a : +a;
     t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t ? 'true' : 'false'));
-    if (qz) qz.d[key] = val;
+    if (qz) { qz.d[key] = val; if (key === 'hrMode' || key === 'watch') { readSetupInputs(); const box = $('hrfields'); if (box) box.innerHTML = hrFields(qz.d); } }
     if (ci && (key === 'feel' || key === 'repeat')) { if (key === 'feel') ci.feel = val; else ci.repeat = val === 1; openCheckin(); }
   },
   open: a => { const s = slotById(a); if (!s) return; if (s.type === 'quality') openQ(s); else if (s.type === 'strength') openS(s); else openRun(s); },
-  tick: (a, t) => { tickSlot(a); if (t.getAttribute('data-close')) closeSheet(); },
+  tick: (a, t) => {
+    const s = slotById(a), pe = $('epace');
+    if (s && pe && (s.type === 'easy' || s.type === 'long') && !S.week.done[a]) { const sec = parseTime(pe.value); if (sec && sec > 150 && sec < 900) S.easyLog = (S.easyLog || []).concat([{no:S.week.no, pace:sec, cap:easyCap()}]).slice(-60); }
+    tickSlot(a); if (t.getAttribute('data-close') && (!s || s.type !== 'quality' || (S.week.q2off && isQ2(s)) || !qById(S.week.picks[a]))) closeSheet();
+  },
+  qfb: a => { const x = a.split('|'); tickSlot(x[0], x[1]); closeSheet(); },
+  longeasy: a => { const s = slotById(a); if (!s) return; S.week.lrv = 'easy'; S.lrLastStructured = 0; S.week.q2off = false; autoPick(); save(); closeSheet(); render(); toast('Easy long run this week'); },
   pickq: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; S.week.picks[x[0]] = x[1]; delete S.week.auto[x[0]]; save(); render(); openQ(s); },
   changeq: a => { const s = slotById(a); if (s) openQPicker(s); },
   picks: a => { const x = a.split('|'), s = slotById(x[0]); if (!s) return; s.key = x[1]; save(); render(); closeSheet(); toast(SS[x[1]].name + ' on ' + DAYLONG[s.day]); },
@@ -1178,6 +1453,8 @@ const act = {
   },
   backup: () => openBackup(),
   link: () => openLink(),
+  newcode: () => createCode(false),
+  copylink: a => { const u = location.origin + '/?u=' + a; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(() => toast('Link copied'), () => toast(u)); else toast(u); },
   dolink: () => doLink(),
   syncpill: () => { if (pendingCloud) askWhich(pendingCloud); else if (syncKey()) openBackup(); else openLink(); },
   keepcloud: () => { if (pendingCloud) takeCloud(pendingCloud); },
