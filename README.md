@@ -18,8 +18,22 @@ They open the link, answer five questions, and the week builds itself. Their pla
 - On iPhone the installed home-screen app has its own storage, separate from Safari. The app's start link carries the code, and if it ever opens empty, "Already have a code?" on the first screen restores everything.
 - Progress, Back up or restore gives a spare backup code.
 
-## Firestore rules
-Allow read and write on `flex/{key}` the same way `plans/{id}` is allowed. If the pill says Not saved to cloud on a phone with a good connection, the rules are the first thing to check.
+## Firestore rules (do this once before anyone uses it)
+The app writes to a new collection, `flex`, in the same Firebase project as Blueprint. Until the rules allow it, every save is refused and the app shows "The cloud refused the request". In the Firebase console, open the `runner-plan-host` project, Firestore Database, Rules, and add a `flex` block beside the existing `plans` one:
+
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /plans/{planId} {
+          allow read, write: if true;
+        }
+        match /flex/{key} {
+          allow read, write: if true;
+        }
+      }
+    }
+
+Publish, then reload the app. Codes are the only protection, so keep them unguessable (the app's generated codes are).
 
 ## One site per person (optional, still one repo)
 Create extra Netlify sites from the same repo and set an environment variable `FLEX_KEY` on each (for example `george-bm-7k2q`). `inject.sh` bakes it into `index.html` at build, so that site syncs that person with no link needed. Sites with no `FLEX_KEY` work as the shared site. This only runs on repo-connected deploys; a drag-and-drop deploy skips the build step.
@@ -32,11 +46,11 @@ Chosen on the strength-coach skill's rules: tension through a full range with at
 - Every quality session answers smooth, hard but fine or struggled. Struggled never levels up; three in a row forces a lighter week and pauses the second slot.
 - Main sets are capped by weekly volume: threshold about 10 percent, intervals 8 percent (10 km max), fast reps 5 percent (5 km max), with floors so the core sessions always fit at starter volume. Held rungs say so.
 - The running goal weights the session mix and the long runs: 5K and 10K lean on intervals, half on threshold with progressive and fast-finish long runs, marathon on marathon-pace blocks (16, 20, 30, 40 minutes) and no intervals. Structured long runs need a 60 minute long run, never come two in a row and never on a lighter week.
-- Heart rate: easy and long runs are controlled by heart rate when a monitor is set up, pace as a guide. Watch zones (the entered top of the easy zone) or max and resting on heart rate reserve with Garmin's bands. COROS users must use watch zones (waking resting HR inflates reserve zones). Estimated max is refused.
+- Heart rate: easy and long runs are controlled by heart rate when a monitor is set up, pace as a guide. Watch zones (the entered top of the easy zone) or max and resting on heart rate reserve with Garmin's bands. Garmin and other watches get five numbered zones; COROS gets its six named zones on its own breakpoints (easy cap at 74 percent of reserve). COROS users are warned that the app's waking resting figure reads high and told to count a true resting pulse or use watch zones. Estimated max is refused.
 - Over 50: 72 hours between hard runs, three build weeks at most, no second quality slot.
 
 ## How the week is built
-Runs are placed first (long run Sunday, quality midweek, easy runs around them, strides on the run before the long run). Strength sessions are then placed by searching every assignment of sessions to days and keeping the cheapest: the same muscle group is never on consecutive days, lower-body sessions avoid the day before a hard run and the day after the long run, and the free day stays free unless every day is used. Paired sessions (Lower A and B, Push A and B, Pull A and B, Upper A and B) use different main lifts.
+Runs are placed first (long run Sunday, quality midweek, easy runs around them, strides on the run before the long run). Strength sessions are then placed by searching every assignment of sessions to days and keeping the cheapest: the same muscle group is never on consecutive days, heavy legs the day before a hard run is a last resort (the search will swap a full-body or lower session for an upper or hips-and-core one first, keeping at least one lower session), lifting after a hard run on the same day is preferred to lifting the day before, and the free day stays free unless every day is used. Paired sessions (Lower A and B, Push A and B, Pull A and B, Upper A and B) use different main lifts.
 
 ## After a redeploy
 `sw.js` carries a cache name derived from the HTML, so phones pick up the new build on the next open.

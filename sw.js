@@ -1,4 +1,4 @@
-const CACHE = 'flex-58e49f2793';
+const CACHE = 'flex-397611a251';
 const PRECACHE = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PRECACHE).catch(()=>{})).then(()=>self.skipWaiting()));

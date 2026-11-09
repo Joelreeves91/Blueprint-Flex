@@ -588,33 +588,38 @@ const genTemplate = p => {
   if (keys.length) {
     const hard = {}, runOn = {}, longOn = {};
     out.forEach(x => { runOn[x.day] = x.type; if (x.type === 'quality' || x.type === 'long') hard[x.day] = x.type; if (x.type === 'long') longOn[x.day] = true; });
+    /* heavy legs the day before a hard run is a last resort (20), well above swapping the session for an upper one (4) or lifting after the hard run on the same day (6 to 9) */
     const dayCost = (k, d) => {
       const legs = SS[k].lower, core = SS[k].grp === 'core';
       let c = 0;
       if (d === p.freeDay && m < 7) c += 50;
-      if (hard[d] === 'long') c += legs ? 8 : 6; else if (hard[d] === 'quality') c += 5; else if (runOn[d]) c += 1;
-      if (hard[nextDay(d)] && !core) c += legs ? 6 : 1;
+      if (hard[d] === 'long') c += legs ? 9 : 6; else if (hard[d] === 'quality') c += legs ? 6 : 5; else if (runOn[d]) c += 1;
+      if (hard[nextDay(d)] && !core) c += legs ? 20 : 1;
       if (longOn[prevDay(d)] && legs) c += 4;
       return c;
     };
+    const ALT = {FBA:['UPB'], FBB:['UPA'], FBC:['CORE','UPA','UPB'], LOB:['CORE']};
+    const lowersWanted = Math.min(1, keys.filter(k => SS[k].lower).length);
     const clash = (a, b) => CLASH[SS[a].grp].indexOf(SS[b].grp) >= 0;
     let best = null, bestCost = Infinity;
-    const assign = {}, used = {};
-    const dfs = (i, cost) => {
+    const assign = [], used = {};
+    const dfs = (i, cost, lowers) => {
       if (cost >= bestCost) return;
-      if (i === keys.length) { bestCost = cost; best = Object.assign({}, assign); return; }
-      const k = keys[i];
-      DAYS.forEach(d => {
-        if (used[d]) return;
-        let c = dayCost(k, d);
-        Object.keys(assign).forEach(k2 => { const d2 = assign[k2]; if ((nextDay(d) === d2 || prevDay(d) === d2) && clash(k, k2)) c += 40; });
-        assign[k] = d; used[d] = true;
-        dfs(i + 1, cost + c);
-        delete assign[k]; delete used[d];
+      if (i === keys.length) { if (lowers < lowersWanted) return; bestCost = cost; best = assign.slice(); return; }
+      [keys[i]].concat(ALT[keys[i]] || []).forEach((k, oi) => {
+        if (assign.some(a => a.key === k)) return;
+        DAYS.forEach(d => {
+          if (used[d]) return;
+          let c = dayCost(k, d) + (oi ? 4 : 0);
+          assign.forEach(a => { if ((nextDay(d) === a.day || prevDay(d) === a.day) && clash(k, a.key)) c += 40; });
+          assign.push({key:k, day:d}); used[d] = true;
+          dfs(i + 1, cost + c, lowers + (SS[k].lower ? 1 : 0));
+          assign.pop(); delete used[d];
+        });
       });
     };
-    dfs(0, 0);
-    keys.forEach(k => out.push({id:uid('s'), type:'strength', day:best[k], key:k}));
+    dfs(0, 0, 0);
+    best.forEach(a => out.push({id:uid('s'), type:'strength', day:a.day, key:a.key}));
   }
   return out;
 };
@@ -798,8 +803,12 @@ const nextWeekPreview = (feel, repeat) => {
 /* ============ heart rate ============ */
 const hasHR = () => S.profile.hrMode === 'zone' || S.profile.hrMode === 'karvonen';
 const hrr = f => Math.round(S.profile.rhr + f*(S.profile.mhr - S.profile.rhr));
-const easyCap = () => { const p = S.profile; if (p.hrMode === 'zone' && p.hrCap) return p.hrCap; if (p.hrMode === 'karvonen' && p.mhr && p.rhr) return hrr(0.70); return null; };
-const hrZones = () => { const p = S.profile; if (p.hrMode !== 'karvonen' || !p.mhr || !p.rhr) return null; return [['Zone 1', hrr(0.5), hrr(0.6), 'Warm-up and recovery jogs'], ['Zone 2', hrr(0.6), hrr(0.7), 'Easy and long runs'], ['Zone 3', hrr(0.7), hrr(0.8), 'Steady, and late in long runs'], ['Zone 4', hrr(0.8), hrr(0.9), 'Marathon pace and threshold'], ['Zone 5', hrr(0.9), p.mhr, 'Intervals and strides, briefly']]; };
+const easyCap = () => { const p = S.profile; if (p.hrMode === 'zone' && p.hrCap) return p.hrCap; if (p.hrMode === 'karvonen' && p.mhr && p.rhr) return hrr(p.watch === 'coros' ? 0.74 : 0.70); return null; };
+const hrZones = () => {
+  const p = S.profile; if (p.hrMode !== 'karvonen' || !p.mhr || !p.rhr) return null;
+  if (p.watch === 'coros') return [['Recovery', p.rhr, hrr(0.59), 'Recovery jogs, warm-up, cool-down'], ['Aerobic Endurance', hrr(0.59), hrr(0.74), 'Easy runs and the easy parts of long runs'], ['Aerobic Power', hrr(0.74), hrr(0.84), 'Marathon pace, steady efforts'], ['Threshold', hrr(0.84), hrr(0.88), 'Threshold sessions, half marathon pace'], ['Anaerobic Endurance', hrr(0.88), hrr(0.95), 'Intervals, 5K pace'], ['Anaerobic Power', hrr(0.95), p.mhr, 'Strides and hill sprints']];
+  return [['Zone 1', hrr(0.5), hrr(0.6), 'Warm-up and recovery jogs'], ['Zone 2', hrr(0.6), hrr(0.7), 'Easy and long runs'], ['Zone 3', hrr(0.7), hrr(0.8), 'Steady, and late in long runs'], ['Zone 4', hrr(0.8), hrr(0.9), 'Marathon pace and threshold'], ['Zone 5', hrr(0.9), p.mhr, 'Intervals and strides, briefly']];
+};
 const easyZoneName = () => S.profile.watch === 'coros' ? 'Aerobic Endurance' : 'Zone 2';
 
 /* ============ long run builder ============ */
@@ -920,7 +929,7 @@ const renderPaces = () => {
     const cap = easyCap(), z = hrZones();
     h += '<div class="sec-title sub">Heart rate</div>';
     h += '<div class="cards"><div class="pc" style="--c:var(--easy)"><div class="n">Easy cap</div><div class="v">' + cap + '<small>bpm</small></div><div class="d">Top of ' + easyZoneName() + '. Easy and long runs stay under this.</div></div>'
-      + (z ? '<div class="pc" style="--c:var(--long)"><div class="n">Reserve</div><div class="v">' + (p.mhr - p.rhr) + '<small>bpm</small></div><div class="d">Max ' + p.mhr + ', resting ' + p.rhr + '. Zones are percent of this, not of max.</div></div>' : '<div class="pc" style="--c:var(--long)"><div class="n">Source</div><div class="v" style="font-size:1.2rem">Your watch</div><div class="d">Platform zones beat anything recalculated.</div></div>') + '</div>';
+      + (z ? '<div class="pc" style="--c:var(--long)"><div class="n">Reserve</div><div class="v">' + (p.mhr - p.rhr) + '<small>bpm</small></div><div class="d">Max ' + p.mhr + ', resting ' + p.rhr + '. ' + (p.watch === 'coros' ? 'COROS\u2019s six zones' : 'Five zones') + ' on heart rate reserve, not percent of max.</div></div>' : '<div class="pc" style="--c:var(--long)"><div class="n">Source</div><div class="v" style="font-size:1.2rem">Your watch</div><div class="d">Platform zones beat anything recalculated.</div></div>') + '</div>';
     if (z) h += '<table class="tt"><tr><th>Zone</th><th>bpm</th><th>Used for</th></tr>' + z.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + ' to ' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('') + '</table>';
     h += '<p class="hint">Quality sessions stay on pace or effort; heart rate lags too much on short reps to steer them. If an easy run at the cap ever feels harder than full sentences, the cap is too generous: trust the talk test and lower it in settings.</p>';
   }
@@ -1362,6 +1371,7 @@ const cloudBoot = () => {
   cloudReady = false; setSync('syncing');
   window.fbLoad(k).then(reconcile, () => setSync('fail'));
 };
+const cloudErr = e => (e && (e.code === 'permission-denied' || /permission|insufficient/i.test(String(e.message || e)))) ? 'The cloud refused the request. This is a setup problem on the coach\u2019s side (Firestore rules for the flex collection), not yours. Tell Joel.' : 'Could not reach the cloud. Check your connection and try again in a minute.';
 const newCode = () => { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let c = ''; for (let i = 0; i < 8; i++) c += a[Math.floor(Math.random()*a.length)]; return c.slice(0, 4) + '-' + c.slice(4); };
 const createCode = auto => {
   if (auto && syncKey()) return;
@@ -1376,7 +1386,7 @@ const createCode = auto => {
     h += '<div class="block"><p class="big" style="font-size:2rem;letter-spacing:.04em">' + esc(k) + '</p><p>Your link: ' + esc(location.origin + '/?u=' + k) + '</p></div>';
     h += '<button class="btn pri" data-act="copylink" data-arg="' + k + '">Copy my link</button><button class="btn" data-act="close">Done</button>';
     openSheet(h);
-  }, () => toast('Cannot reach the cloud right now'));
+  }, e => { if (!auto) { let h = head('Could not create a code', ''); h += '<div class="block"><p>' + esc(cloudErr(e)) + '</p></div><button class="btn" data-act="close">Close</button>'; openSheet(h); setSync('fail'); } });
 };
 const openLink = () => {
   const k = syncKey();
@@ -1400,7 +1410,7 @@ const doLink = () => {
       if (!hadSetup) { qz = null; openSetup(true); toast('Linked. Nothing saved under that code yet, so let\u2019s set you up'); }
       else toast('Linked. Your plan is now saved to the cloud');
     }
-  }, () => { setSync('fail'); err.textContent = 'Could not reach the cloud. Try again in a minute.'; });
+  }, e => { setSync('fail'); err.textContent = cloudErr(e); });
 };
 
 /* ============ actions ============ */
