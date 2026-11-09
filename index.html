@@ -1228,7 +1228,7 @@ const hrFields = d => {
   else {
     h += '<div class="field"><label for="fmhr">Max heart rate</label><input id="fmhr" type="number" inputmode="numeric" min="150" max="215" value="' + esc(d.mhr) + '"></div>';
     h += '<div class="field"><label>Where is that max from?</label>' + seg('mhrSrc', ['measured','estimated'], d.mhrSrc, ['Measured', 'A formula or guess']) + '<p class="hint">Measured means an all-out race finish or test with a strap, or a ceiling you keep hitting in your data. Age formulas miss by 12 beats either way, which is a whole zone.</p></div>';
-    h += '<div class="field"><label for="frhr">Resting heart rate</label><input id="frhr" type="number" inputmode="numeric" min="30" max="95" value="' + esc(d.rhr) + '"><p class="hint">' + (d.watch === 'coros' ? 'COROS records resting HR on waking, 5 to 8 beats high, which would inflate these zones. Use your watch\u2019s zones instead.' : 'The overnight low from your watch, or taken first thing before you get up.') + '</p></div>';
+    h += '<div class="field"><label for="frhr">Resting heart rate</label><input id="frhr" type="number" inputmode="numeric" min="30" max="95" value="' + esc(d.rhr) + '"><p class="hint">' + (d.watch === 'coros' ? 'Do not use the COROS app\u2019s resting figure: it is taken on waking and reads 5 to 8 beats high, which makes every zone too fast. Count your pulse lying still before you get up, or pick Watch zones and copy the top of Aerobic Endurance from the COROS app.' : 'The overnight low from your watch, or taken first thing before you get up.') + '</p></div>';
   }
   return h;
 };
@@ -1241,7 +1241,6 @@ const readSetupInputs = () => {
     if (d.hrMode === 'zone') { d.hrCap = num('fhrcap'); if (!(d.hrCap >= 90 && d.hrCap <= 200)) return 'Enter the top of your easy zone, between 90 and 200 bpm.'; }
     if (d.hrMode === 'karvonen') {
       d.mhr = num('fmhr'); d.rhr = num('frhr');
-      if (d.watch === 'coros') return 'On COROS, use your watch\u2019s zones: its waking resting HR inflates zones built this way.';
       if (d.mhrSrc !== 'measured') return 'A guessed max gives guessed zones. Measure it, or use your watch\u2019s zones.';
       if (!(d.mhr >= 150 && d.mhr <= 215)) return 'Max heart rate should be between 150 and 215.';
       if (!(d.rhr >= 30 && d.rhr <= 95)) return 'Resting heart rate should be between 30 and 95.';
