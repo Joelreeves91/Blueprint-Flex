@@ -188,6 +188,9 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-r
 .top .brand{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:1.4rem}
 .sync span{white-space:nowrap}
 
+.tpair{display:flex;align-items:center;gap:8px}
+.tpair input{width:50%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;font-variant-numeric:tabular-nums}
+.tpair span{font-family:var(--display);font-weight:700;font-size:1.3rem;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -442,7 +445,13 @@ const clamp = (n,a,b) => Math.max(a, Math.min(b, n));
 const fmtPace = s => { s = Math.round(s); return Math.floor(s/60) + ':' + pad(s%60); };
 const fmtTime = s => { s = Math.round(s); return Math.floor(s/60) + ':' + pad(s%60); };
 const fmtHM = min => { min = Math.round(min); const h = Math.floor(min/60), m = min%60; return h ? (h + ' h' + (m ? ' ' + m + ' min' : '')) : (m + ' min'); };
-const parseTime = str => { const m = String(str).trim().match(/^(\d{1,2}):(\d{2})$/); return m ? (+m[1])*60 + (+m[2]) : null; };
+const parseTime = str => { /* accepts 25:00, 25.00, 25,00, 25 00 and 2500 */
+  const t = String(str).trim(); let m = t.match(/^(\d{1,2})[:.,\s](\d{1,2})$/);
+  if (!m) { m = t.match(/^(\d{3,4})$/); if (m) m = [0, t.slice(0, -2), t.slice(-2)]; }
+  if (!m) return null; const sec = +m[2]; if (sec > 59) return null; return (+m[1])*60 + sec;
+};
+const timePair = (id, sec, aria) => '<div class="tpair"><input id="' + id + '_m" type="number" inputmode="numeric" min="0" max="99" placeholder="min" value="' + (sec ? Math.floor(sec/60) : '') + '" aria-label="' + aria + ' minutes"><span>:</span><input id="' + id + '_s" type="number" inputmode="numeric" min="0" max="59" placeholder="sec" value="' + (sec ? pad(sec%60) : '') + '" aria-label="' + aria + ' seconds"></div>';
+const readPair = id => { const m = document.getElementById(id + '_m'), s2 = document.getElementById(id + '_s'); if (!m || !s2) return {empty:true, sec:null}; if (m.value === '' && s2.value === '') return {empty:true, sec:null}; const mm = +m.value, ss = s2.value === '' ? 0 : +s2.value; if (!(mm >= 0) || !(ss >= 0 && ss <= 59)) return {empty:false, sec:null}; return {empty:false, sec:mm*60 + ss}; };
 const distTxt = m => m >= 1000 ? (m/1000) + ' km' : m + ' m';
 const recTxt = sec => { const m = Math.floor(sec/60), s = sec%60; return (m ? m + ' min' : '') + (m && s ? ' ' : '') + (s ? s + ' s' : ''); };
 const nextDay = d => DAYS[(DAYS.indexOf(d) + 1) % 7];
@@ -806,8 +815,8 @@ const hrr = f => Math.round(S.profile.rhr + f*(S.profile.mhr - S.profile.rhr));
 const easyCap = () => { const p = S.profile; if (p.hrMode === 'zone' && p.hrCap) return p.hrCap; if (p.hrMode === 'karvonen' && p.mhr && p.rhr) return hrr(p.watch === 'coros' ? 0.74 : 0.70); return null; };
 const hrZones = () => {
   const p = S.profile; if (p.hrMode !== 'karvonen' || !p.mhr || !p.rhr) return null;
-  if (p.watch === 'coros') return [['Recovery', p.rhr, hrr(0.59), 'Recovery jogs, warm-up, cool-down'], ['Aerobic Endurance', hrr(0.59), hrr(0.74), 'Easy runs and the easy parts of long runs'], ['Aerobic Power', hrr(0.74), hrr(0.84), 'Marathon pace, steady efforts'], ['Threshold', hrr(0.84), hrr(0.88), 'Threshold sessions, half marathon pace'], ['Anaerobic Endurance', hrr(0.88), hrr(0.95), 'Intervals, 5K pace'], ['Anaerobic Power', hrr(0.95), p.mhr, 'Strides and hill sprints']];
-  return [['Zone 1', hrr(0.5), hrr(0.6), 'Warm-up and recovery jogs'], ['Zone 2', hrr(0.6), hrr(0.7), 'Easy and long runs'], ['Zone 3', hrr(0.7), hrr(0.8), 'Steady, and late in long runs'], ['Zone 4', hrr(0.8), hrr(0.9), 'Marathon pace and threshold'], ['Zone 5', hrr(0.9), p.mhr, 'Intervals and strides, briefly']];
+  if (p.watch === 'coros') return [['Recovery', p.rhr, hrr(0.59), 'Recovery jogs, warm-up, cool-down'], ['Aerobic Endurance', hrr(0.59), hrr(0.74), 'Easy runs and the easy parts of long runs'], ['Aerobic Power', hrr(0.74), hrr(0.84), 'Marathon pace, steady efforts'], ['Threshold', hrr(0.84), hrr(0.88), 'Threshold sessions, half marathon pace'], ['Anaerobic Endurance', hrr(0.88), hrr(0.95), 'Intervals, 5K pace'], ['Anaerobic Power', hrr(0.95), p.mhr, 'Short intervals and hill sprints']];
+  return [['Zone 1', hrr(0.5), hrr(0.6), 'Warm-up and recovery jogs'], ['Zone 2', hrr(0.6), hrr(0.7), 'Easy and long runs'], ['Zone 3', hrr(0.7), hrr(0.8), 'Steady, and late in long runs'], ['Zone 4', hrr(0.8), hrr(0.9), 'Marathon pace and threshold'], ['Zone 5', hrr(0.9), p.mhr, 'Intervals, briefly']];
 };
 const easyZoneName = () => S.profile.watch === 'coros' ? 'Aerobic Endurance' : 'Zone 2';
 
@@ -1035,7 +1044,7 @@ const openRun = s => {
     if (long) h += '<div class="block"><h4>Fuel</h4><p>Over 75 minutes, take water and some carbohydrate with you.' + (S.profile.niggle === 'itb' ? ' Keep the route flat where you can; downhills are what upset an IT band.' : '') + '</p></div>';
   }
   if (s.strides) h += '<div class="block"><h4>Strides</h4><p>Finish with 6 x 20 s strides: smooth and fast, never a sprint. Walk back between each. They keep your legs sharp at almost no cost.</p></div>';
-  if (cap && !dn) h += '<div class="field"><label for="epace">Average pace today (optional, min:sec per km)</label><input id="epace" type="text" inputmode="numeric" placeholder="5:45" autocomplete="off"><p class="hint">Log it and Progress shows your pace at the same heart rate getting faster over the weeks.</p></div>';
+  if (cap && !dn) h += '<div class="field"><label>Average pace today, per km (optional)</label>' + timePair('epace', 0, 'pace') + '<p class="hint">Log it and Progress shows your pace at the same heart rate getting faster over the weeks.</p></div>';
   h += moveRow(s);
   if (s.type === 'easy') h += '<button class="btn sm" data-act="retype" data-arg="' + s.id + '|quality">Make this a quality run instead</button>';
   if (long && lrv !== 'easy' && !dn) h += '<button class="btn sm" data-act="longeasy" data-arg="' + s.id + '">Make it an easy long run this week</button>';
@@ -1172,7 +1181,7 @@ const openLighter = () => {
 };
 const openRetest = () => {
   let h = head(hasPaces() ? 'Update your 5K' : 'Add a 5K time', 'Every pace comes from this time.');
-  h += '<div class="field"><label for="fnew">5K time (mm:ss)</label><input id="fnew" type="text" inputmode="numeric" placeholder="24:30" value="' + (hasPaces() ? fmtTime(S.profile.fiveK) : '') + '" autocomplete="off"></div><div id="rerr" class="err" role="alert"></div><button class="btn pri" data-act="saveretest">Save</button>';
+  h += '<div class="field"><label>5K time, minutes and seconds</label>' + timePair('fnew', hasPaces() ? S.profile.fiveK : 0, '5K time') + '</div><div id="rerr" class="err" role="alert"></div><button class="btn pri" data-act="saveretest">Save</button>';
   openSheet(h);
 };
 const openBackup = () => {
@@ -1205,7 +1214,7 @@ const renderSetup = () => {
   } else if (st === 'running') {
     h += head('Running', 'The week fills itself in from these.');
     h += '<div class="field"><label>Running days per week</label>' + seg('runDays', [0,1,2,3,4,5,6,7], d.runDays) + '<p class="hint">3 gives you easy, quality and long. 4 adds a second easy run, and so on. A second quality session is a setting on the last step, unlocked once it is earned.</p></div>';
-    h += '<div class="field"><label for="f5k">Recent 5K time (optional)</label><input id="f5k" type="text" inputmode="numeric" placeholder="24:30" value="' + esc(d.fiveK) + '" autocomplete="off"><p class="hint">A parkrun or hard solo effort. Sets every pace. Leave it blank and runs go by effort instead.</p></div>';
+    h += '<div class="field"><label>Recent 5K time (optional)</label>' + timePair('f5k', d.fiveK ? parseTime(d.fiveK) : 0, '5K time') + '<p class="hint">Minutes in the first box, seconds in the second. A parkrun or hard solo effort sets every pace. Leave both blank and runs go by effort instead.</p></div>';
     h += '<div class="field"><label for="flong">Longest easy run you can do comfortably now, in minutes</label><input id="flong" type="number" inputmode="numeric" min="0" value="' + esc(d.longMin) + '"></div>';
     h += '<div class="field"><label for="fcap">Long run ceiling, in minutes</label><input id="fcap" type="number" inputmode="numeric" min="0" value="' + esc(d.longCap) + '"><p class="hint">The long run grows until it reaches this. Raise it whenever you want more.</p></div>';
     h += '<div class="field"><label>Heart rate monitor?</label>' + seg('hrMode', ['none','zone','karvonen'], d.hrMode, ['No', 'Watch zones', 'Max and resting']) + '<p class="hint">With heart rate, easy and long runs are controlled by it instead of pace. That is the better way; pace is the fallback.</p></div>';
@@ -1245,7 +1254,7 @@ const readSetupInputs = () => {
   const d = qz.d, st = QSTEPS[qz.step], $ = id => document.getElementById(id) || {value:''};
   if (st === 'focus') { const ag = $('fage').value.trim(); d.age = ag === '' ? '' : +ag; if (ag !== '' && !(d.age >= 14 && d.age <= 99)) return 'Age should be between 14 and 99, or left blank.'; }
   if (st === 'running') {
-    d.fiveK = $('f5k').value.trim(); d.longMin = +$('flong').value; d.longCap = +$('fcap').value;
+    const fk = readPair('f5k'); d.fiveK = fk.empty ? '' : (fk.sec === null ? 'bad' : fmtTime(fk.sec)); d.longMin = +$('flong').value; d.longCap = +$('fcap').value;
     const num = id => { const v = $(id).value; return v === '' ? '' : +v; };
     if (d.hrMode === 'zone') { d.hrCap = num('fhrcap'); if (!(d.hrCap >= 90 && d.hrCap <= 200)) return 'Enter the top of your easy zone, between 90 and 200 bpm.'; }
     if (d.hrMode === 'karvonen') {
@@ -1255,7 +1264,7 @@ const readSetupInputs = () => {
       if (!(d.rhr >= 30 && d.rhr <= 95)) return 'Resting heart rate should be between 30 and 95.';
       if (d.mhr - d.rhr < 80) return 'Max and resting are too close together to be right. Check both.';
     }
-    if (d.fiveK && (parseTime(d.fiveK) === null || parseTime(d.fiveK) < 720 || parseTime(d.fiveK) > 3600)) return 'Enter the 5K as minutes and seconds, like 24:30, or leave it blank.';
+    if (d.fiveK && (parseTime(d.fiveK) === null || parseTime(d.fiveK) < 720 || parseTime(d.fiveK) > 3600)) return 'Enter the 5K as minutes in the first box and seconds in the second, between 12:00 and 60:00, or leave both blank.';
     if (d.runDays > 0 && !(d.longMin >= 15 && d.longMin <= 210)) return 'Longest easy run should be between 15 and 210 minutes.';
     if (d.runDays > 0 && !(d.longCap >= 30 && d.longCap <= 210)) return 'Long run ceiling should be between 30 and 210 minutes (that is the three and a half hour cap).';
   }
@@ -1428,8 +1437,8 @@ const act = {
   },
   open: a => { const s = slotById(a); if (!s) return; if (s.type === 'quality') openQ(s); else if (s.type === 'strength') openS(s); else openRun(s); },
   tick: (a, t) => {
-    const s = slotById(a), pe = $('epace');
-    if (s && pe && (s.type === 'easy' || s.type === 'long') && !S.week.done[a]) { const sec = parseTime(pe.value); if (sec && sec > 150 && sec < 900) S.easyLog = (S.easyLog || []).concat([{no:S.week.no, pace:sec, cap:easyCap()}]).slice(-60); }
+    const s = slotById(a), pe = $('epace_m');
+    if (s && pe && (s.type === 'easy' || s.type === 'long') && !S.week.done[a]) { const sec = readPair('epace').sec; if (sec && sec > 150 && sec < 900) S.easyLog = (S.easyLog || []).concat([{no:S.week.no, pace:sec, cap:easyCap()}]).slice(-60); }
     tickSlot(a); if (t.getAttribute('data-close') && (!s || s.type !== 'quality' || (S.week.q2off && isQ2(s)) || !qById(S.week.picks[a]))) closeSheet();
   },
   qfb: a => { const x = a.split('|'); tickSlot(x[0], x[1]); closeSheet(); },
@@ -1456,8 +1465,8 @@ const act = {
   lighterok: () => { const w = S.week; if (w.kind !== 'deload') { w.kind = 'deload'; w.resume = w.level; } closeSheet(); save(); render(); toast('Switched to a lighter week'); },
   retest: () => openRetest(),
   saveretest: () => {
-    const sec = parseTime($('fnew').value);
-    if (sec === null || sec < 720 || sec > 3600) { $('rerr').textContent = 'Enter the 5K as minutes and seconds, like 24:30.'; return; }
+    const sec = readPair('fnew').sec;
+    if (sec === null || sec < 720 || sec > 3600) { $('rerr').textContent = 'Enter minutes in the first box and seconds in the second, between 12:00 and 60:00.'; return; }
     S.profile.fiveK = sec; S.profile.testWeek = S.week.no; save(); closeSheet(); render(); toast('Paces updated');
   },
   backup: () => openBackup(),
